@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Viewpoint — แจ้งซ่อม</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0E0E10;
+    --surface:   #18181B;
+    --surface2:  #27272A;
+    --border:    #3F3F46;
+    --accent:    #06C755;   /* LINE green */
+    --accent2:   #04A344;
+    --text:      #FAFAFA;
+    --muted:     #A1A1AA;
+    --danger:    #F87171;
+    --urgent:    #FB923C;
+    --high:      #FBBF24;
+    --medium:    #34D399;
+    --low:       #60A5FA;
+    --radius:    14px;
+    --radius-sm: 8px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* ── Layout ── */
+  .app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(6,199,85,.2);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(6,199,85,.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(6,199,85,.05); }
+  }
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    padding-left: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .user-chip {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .user-avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #000; font-weight: 700;
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 3px;
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── Steps indicator ── */
+  .steps {
+    display: flex;
+    gap: 0;
+    padding: 0 20px;
+    margin: 16px 0 0;
+  }
+  .step-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+  }
+  .step-item.active  { opacity: 1; }
+  .step-item.done    { opacity: 0.7; }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: all 0.25s;
+  }
+  .step-item.active .step-dot {
+    background: var(--accent); border-color: var(--accent);
+    color: #000;
+  }
+  .step-item.done .step-dot {
+    background: var(--surface2); border-color: var(--accent);
+    color: var(--accent);
+  }
+  .step-label { font-size: 10px; color: var(--muted); text-align: center; white-space: nowrap; }
+  .step-connector {
+    flex: 0.5;
+    height: 1.5px;
+    background: var(--border);
+    margin-top: 13px;
+    align-self: flex-start;
+  }
+
+  /* ── Form pages ── */
+  .page { display: none; padding: 20px; animation: fadeUp 0.3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Field ── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .field label span.req { color: var(--accent); margin-left: 2px; }
+
+  select, input, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select:focus, input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A1A1AA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  textarea { resize: none; min-height: 90px; line-height: 1.6; }
+  input::placeholder, textarea::placeholder { color: var(--border); }
+
+  /* ── Priority selector ── */
+  .priority-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .priority-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+  }
+  .priority-btn .p-icon { font-size: 18px; }
+  .priority-btn .p-sub { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
+  .priority-btn.selected[data-p="urgent"] { border-color: var(--urgent); background: rgba(251,146,60,.1); color: var(--urgent); }
+  .priority-btn.selected[data-p="high"]   { border-color: var(--high);   background: rgba(251,191,36,.1); color: var(--high); }
+  .priority-btn.selected[data-p="medium"] { border-color: var(--medium); background: rgba(52,211,153,.1);  color: var(--medium); }
+  .priority-btn.selected[data-p="low"]    { border-color: var(--low);    background: rgba(96,165,250,.1);  color: var(--low); }
+
+  /* ── Photo upload ── */
+  .photo-upload {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .photo-upload:hover { border-color: var(--accent); }
+  .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload p { font-size: 13px; color: var(--muted); }
+  .photo-upload p strong { color: var(--accent); }
+  .photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .photo-thumb {
+    width: 70px; height: 70px; border-radius: var(--radius-sm);
+    object-fit: cover; border: 1.5px solid var(--border);
+  }
+
+  /* ── Review card ── */
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .review-header {
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .review-header-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+  .review-body { padding: 14px 16px; }
+  .review-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; }
+  .review-row:last-child { margin-bottom: 0; }
+  .review-key { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .review-val { font-size: 14px; font-weight: 600; text-align: right; }
+
+  /* ── Priority badge in review ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .badge-urgent { background: rgba(251,146,60,.15); color: var(--urgent); }
+  .badge-high   { background: rgba(251,191,36,.15); color: var(--high); }
+  .badge-medium { background: rgba(52,211,153,.15);  color: var(--medium); }
+  .badge-low    { background: rgba(96,165,250,.15);  color: var(--low); }
+
+  /* ── Navigation buttons ── */
+  .nav-bar {
+    padding: 16px 20px 0;
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 15px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-back {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    flex: 0.6;
+  }
+  .btn-next {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-next:active { transform: scale(0.98); background: var(--accent2); }
+  .btn-next:disabled { opacity: 0.35; pointer-events: none; }
+  .btn-submit {
+    background: var(--accent);
+    color: #000;
+    width: 100%;
+    margin: 0 20px;
+    width: calc(100% - 40px);
+  }
+
+  /* ── Success screen ── */
+  .success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .success-screen.active { display: flex; }
+  .success-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(6,199,85,.12);
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin-bottom: 20px;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .ticket-id-display {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 12px 0;
+    letter-spacing: 2px;
+  }
+  .line-notify-box {
+    background: rgba(6,199,85,.08);
+    border: 1px solid rgba(6,199,85,.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 16px;
+    max-width: 300px;
+  }
+  .btn-close {
+    margin-top: 24px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 13px 32px;
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ── Validation error ── */
+  .err { font-size: 12px; color: var(--danger); margin-top: 5px; display: none; }
+  .field.has-error select,
+  .field.has-error input,
+  .field.has-error textarea { border-color: var(--danger); }
+  .field.has-error .err { display: block; }
+
+  /* ── Loading overlay ── */
+  .loading {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(14,14,16,.85);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .loading.active { display: flex; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">กำลังส่งข้อมูล...</div>
+</div>
+
+<div class="app">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-dot"></div>
+      <span class="header-title">แจ้งซ่อม</span>
+      <div class="user-chip">
+        <div class="user-avatar" id="avatar-initial">S</div>
+        <span id="user-display-name">Staff</span>
+      </div>
+    </div>
+    <div class="header-sub">VIEWPOINT RESORT · KOH TAO</div>
+    <div class="progress-bar" style="margin-top:12px">
+      <div class="progress-fill" id="progress-fill" style="width:33%"></div>
+    </div>
+  </div>
+
+  <!-- ── STEPS ── -->
+  <div class="steps" id="steps-bar">
+    <div class="step-item active" id="step-1">
+      <div class="step-dot">1</div>
+      <div class="step-label">รายละเอียด</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-2">
+      <div class="step-dot">2</div>
+      <div class="step-label">ความเร่งด่วน</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-3">
+      <div class="step-dot">3</div>
+      <div class="step-label">ตรวจสอบ</div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 1: Details ══ -->
+  <div class="page active" id="page-1">
+    <div class="section-label" style="margin-top:20px">ข้อมูลพื้นฐาน</div>
+
+    <div class="field" id="f-department">
+      <label>แผนก <span class="req">*</span></label>
+      <select id="department">
+        <option value="">— เลือกแผนกของคุณ —</option>
+        <option>Front Office</option>
+        <option>Housekeeping</option>
+        <option>F&amp;B Restaurant &amp; Pool</option>
+        <option>F&amp;B Kitchen</option>
+        <option>Chillax Hut</option>
+        <option>Security</option>
+        <option>Gym</option>
+        <option>Admin</option>
+        <option>Staff</option>
+        <option>Shop</option>
+      </select>
+      <div class="err">กรุณาเลือกแผนก</div>
+    </div>
+
+    <div class="field" id="f-location">
+      <label>สถานที่ / ห้อง <span class="req">*</span></label>
+      <select id="location">
+        <option value="">— เลือกสถานที่ —</option>
+        <optgroup label="🌿 Garden Room (G)">
+          <option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option>
+          <option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option>
+        </optgroup>
+        <optgroup label="🌊 Sea View Room (S)">
+          <option>S3</option><option>S4</option><option>S5</option><option>S6</option><option>S7</option>
+          <option>S8</option><option>S9</option><option>S10</option>
+        </optgroup>
+        <optgroup label="🏖 Beachfront Bungalow (B)">
+          <option>B1</option><option>B2</option><option>B3</option>
+        </optgroup>
+        <optgroup label="🏊 Pool Villa">
+          <option>Pool Villa 1</option><option>Pool Villa 2</option><option>Pool Villa 3</option>
+          <option>Pool Villa 4</option><option>Pool Villa 5</option><option>Pool Villa 6</option>
+          <option>Pool Villa 7</option><option>Pool Villa 8</option>
+        </optgroup>
+        <optgroup label="🏨 พื้นที่ส่วนกลาง">
+          <option>Reception</option>
+          <option>Restaurant</option><option>Bar</option><option>Kitchen</option>
+          <option>Pool Area</option>
+          <option>Chillax Hut</option>
+          <option>Gym</option>
+          <option>Garden</option><option>Parking</option>
+          <option>PV Ship</option>
+        </optgroup>
+        <optgroup label="🔧 พื้นที่หลังบ้าน">
+          <option>Staff Room</option><option>Staff Kitchen</option>
+          <option>Laundry</option><option>Storage</option><option>Server Room</option>
+        </optgroup>
+      </select>
+      <div class="err">กรุณาเลือกสถานที่</div>
+    </div>
+
+    <div class="field" id="f-category">
+      <label>ประเภทงานซ่อม <span class="req">*</span></label>
+      <select id="category">
+        <option value="">— เลือกประเภท —</option>
+        <option>⚡ ไฟฟ้า / Electrical</option>
+        <option>🔧 ประปา / Plumbing</option>
+        <option>❄️ แอร์ / Air-Conditioning</option>
+        <option>🪑 เฟอร์นิเจอร์ / Furniture</option>
+        <option>🚪 ประตู / หน้าต่าง</option>
+        <option>📶 อินเทอร์เน็ต / Wi-Fi</option>
+        <option>🧱 โครงสร้าง / Structure</option>
+        <option>🎨 ทาสี / Painting</option>
+        <option>🧹 ทำความสะอาดพิเศษ</option>
+        <option>📦 อุปกรณ์ชำรุด / Equipment</option>
+        <option>⚙️ อื่นๆ / Other</option>
+      </select>
+      <div class="err">กรุณาเลือกประเภทงาน</div>
+    </div>
+
+    <div class="field" id="f-description">
+      <label>อธิบายอาการ / รายละเอียด <span class="req">*</span></label>
+      <textarea id="description" placeholder="เช่น แอร์ไม่เย็น มีเสียงดัง ใช้ไม่ได้ตั้งแต่เช้า..."></textarea>
+      <div class="err">กรุณาอธิบายรายละเอียด</div>
+    </div>
+
+
+
+    <div class="field">
+      <label>แนบรูปภาพ (ถ้ามี)</label>
+      <div class="photo-upload" id="photo-upload-area">
+        <input type="file" accept="image/*" multiple id="photo-input" onchange="handlePhotos(this)">
+        <div class="photo-icon">📷</div>
+        <p><strong>แตะเพื่ออัปโหลด</strong><br>หรือถ่ายรูปจากกล้อง</p>
+      </div>
+      <div class="photo-preview" id="photo-preview"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 2: Priority ══ -->
+  <div class="page" id="page-2">
+    <div class="section-label" style="margin-top:20px">ระดับความเร่งด่วน</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px">เลือกตามความรุนแรงของปัญหาและผลกระทบต่อแขกหรือการดำเนินงาน</p>
+
+    <div class="priority-grid" id="priority-grid">
+      <button class="priority-btn" data-p="urgent" onclick="selectPriority('urgent')">
+        <span class="p-icon">🔴</span>
+        <div>
+          <span>Urgent</span>
+          <span class="p-sub">ต้องแก้ทันที<br>กระทบแขกโดยตรง</span>
+        </div>
+      </button>
+      <button class="priority-btn" data-p="high" onclick="selectPriority('high')">
+        <span class="p-icon">🟠</span>
+        <div>
+          <span>High</span>
+          <span class="p-sub">แก้ภายในวันนี้<br>กระทบการให้บริการ</span>
+        </div>
+      </button>
+      <button class="priority-btn" data-p="medium" onclick="selectPriority('medium')">
+        <span class="p-icon">🟡</span>
+        <div>
+          <span>Medium</span>
+          <span class="p-sub">แก้ภายใน 1–2 วัน<br>ยังใช้งานได้บางส่วน</span>
+        </div>
+      </button>
+      <button class="priority-btn" data-p="low" onclick="selectPriority('low')">
+        <span class="p-icon">🟢</span>
+        <div>
+          <span>Low</span>
+          <span class="p-sub">แก้ตามคิว<br>ไม่กระทบการบริการ</span>
+        </div>
+      </button>
+    </div>
+
+    <div style="margin-top:20px" class="field" id="f-priority">
+      <div class="err" style="display:none" id="priority-err">กรุณาเลือกระดับความเร่งด่วน</div>
+    </div>
+
+    <div class="field" id="f-reporter" style="margin-top:20px">
+      <label>ชื่อผู้แจ้ง <span class="req">*</span></label>
+      <input type="text" id="reporter" placeholder="ชื่อ-นามสกุล หรือชื่อเล่น">
+      <div class="err">กรุณาใส่ชื่อผู้แจ้ง</div>
+    </div>
+
+    <div class="field">
+      <label>เบอร์โทร / ช่องทางติดต่อ (ถ้ามี)</label>
+      <input type="tel" id="contact" placeholder="เช่น ต่อ 101 หรือ LINE: @name">
+    </div>
+  </div>
+
+  <!-- ══ PAGE 3: Review ══ -->
+  <div class="page" id="page-3">
+    <div class="section-label" style="margin-top:20px">ตรวจสอบก่อนส่ง</div>
+
+    <div class="review-card">
+      <div class="review-header">
+        <span style="font-size:16px">📍</span>
+        <span class="review-header-label">สถานที่ & แผนก</span>
+      </div>
+      <div class="review-body">
+        <div class="review-row">
+          <span class="review-key">แผนก</span>
+          <span class="review-val" id="r-department">—</span>
+        </div>
+        <div class="review-row">
+          <span class="review-key">สถานที่</span>
+          <span class="review-val" id="r-location">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-header">
+        <span style="font-size:16px">🔧</span>
+        <span class="review-header-label">รายละเอียดงาน</span>
+      </div>
+      <div class="review-body">
+        <div class="review-row">
+          <span class="review-key">ประเภท</span>
+          <span class="review-val" id="r-category">—</span>
+        </div>
+        <div class="review-row">
+          <span class="review-key">อาการ</span>
+          <span class="review-val" id="r-description" style="font-size:13px;text-align:right;max-width:200px">—</span>
+        </div>
+        <div class="review-row">
+          <span class="review-key">ความเร่งด่วน</span>
+          <span class="review-val" id="r-priority">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-header">
+        <span style="font-size:16px">👤</span>
+        <span class="review-header-label">ผู้แจ้ง</span>
+      </div>
+      <div class="review-body">
+        <div class="review-row">
+          <span class="review-key">ชื่อ</span>
+          <span class="review-val" id="r-reporter">—</span>
+        </div>
+        <div class="review-row">
+          <span class="review-key">ติดต่อ</span>
+          <span class="review-val" id="r-contact" style="font-size:13px">—</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--muted);text-align:center;padding:0 20px 4px">
+      📱 ระบบจะส่ง LINE แจ้งทีม Maintenance ทันทีหลังยืนยัน
+    </p>
+  </div>
+
+  <!-- ══ SUCCESS ══ -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-ring">✓</div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">ส่งสำเร็จ!</h2>
+    <p style="color:var(--muted);font-size:14px">คำขอแจ้งซ่อมถูกบันทึกแล้ว</p>
+    <div class="ticket-id-display" id="ticket-id-display">MT-000</div>
+    <p style="color:var(--muted);font-size:13px">หมายเลข Ticket ของคุณ</p>
+    <div class="line-notify-box">
+      📲 ส่ง LINE แจ้งทีม Maintenance แล้ว<br>
+      <span style="font-size:11px;opacity:0.8">คุณจะได้รับ update เมื่อสถานะเปลี่ยน</span>
+    </div>
+    <button class="btn-close" onclick="closeLiff()">ปิดหน้าต่าง</button>
+  </div>
+
+  <!-- ── NAV BUTTONS ── -->
+  <div class="nav-bar" id="nav-bar">
+    <button class="btn btn-back" id="btn-back" onclick="prevPage()" style="display:none">← กลับ</button>
+    <button class="btn btn-next" id="btn-next" onclick="nextPage()">ถัดไป →</button>
+  </div>
+
+</div><!-- end .app -->
+
+<script>
+// ── CONFIG (แก้ค่าเหล่านี้) ──────────────────────────────────────────────────
+const CONFIG = {
+  LIFF_ID:        "2010069721-aq08g8I1",         // ✅ LIFF ID
+  WEBHOOK_URL:    "YOUR_GOOGLE_APPS_SCRIPT_URL", // ← ใส่ URL ของ Apps Script
+  LINE_GROUP_ID:  "YOUR_LINE_GROUP_ID",          // ← Group ID ทีม Maintenance
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+let currentPage = 1;
+let selectedPriority = "";
+let lineProfile = null;
+let photoFiles = [];
+
+const PRIORITY_LABELS = {
+  urgent: { text: "🔴 Urgent — เร่งด่วนมาก", cls: "badge-urgent" },
+  high:   { text: "🟠 High — เร่งด่วน",      cls: "badge-high" },
+  medium: { text: "🟡 Medium — ปกติ",         cls: "badge-medium" },
+  low:    { text: "🟢 Low — ไม่เร่งด่วน",     cls: "badge-low" },
+};
+
+// ── LIFF INIT ─────────────────────────────────────────────────────────────────
+async function initLiff() {
+  try {
+    await liff.init({ liffId: CONFIG.LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+    lineProfile = await liff.getProfile();
+    document.getElementById("user-display-name").textContent = lineProfile.displayName.split(" ")[0];
+    document.getElementById("avatar-initial").textContent = lineProfile.displayName.charAt(0).toUpperCase();
+    // Pre-fill reporter name
+    document.getElementById("reporter").value = lineProfile.displayName;
+  } catch (e) {
+    // Dev mode fallback (not in LINE)
+    console.log("LIFF init failed (dev mode):", e.message);
+  }
+}
+initLiff();
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function updateUI() {
+  // Pages
+  document.querySelectorAll(".page").forEach((p, i) => {
+    p.classList.toggle("active", i + 1 === currentPage);
+  });
+  // Steps
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById("step-" + i);
+    el.classList.remove("active", "done");
+    if (i === currentPage) el.classList.add("active");
+    else if (i < currentPage) el.classList.add("done");
+  }
+  // Progress
+  document.getElementById("progress-fill").style.width = (currentPage / 3 * 100) + "%";
+  // Buttons
+  document.getElementById("btn-back").style.display = currentPage > 1 ? "" : "none";
+  document.getElementById("btn-next").textContent = currentPage === 3 ? "✓ ยืนยันส่ง" : "ถัดไป →";
+  // Nav bar hide on success
+  document.getElementById("nav-bar").style.display = currentPage > 3 ? "none" : "";
+  document.getElementById("steps-bar").style.display = currentPage > 3 ? "none" : "";
+}
+
+function nextPage() {
+  if (currentPage === 1 && !validatePage1()) return;
+  if (currentPage === 2 && !validatePage2()) return;
+  if (currentPage === 3) { submitForm(); return; }
+  currentPage++;
+  if (currentPage === 3) populateReview();
+  updateUI();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function prevPage() {
+  if (currentPage > 1) { currentPage--; updateUI(); }
+}
+
+// ── VALIDATION ────────────────────────────────────────────────────────────────
+function setError(fieldId, hasError) {
+  document.getElementById(fieldId).classList.toggle("has-error", hasError);
+}
+function val(id) { return document.getElementById(id).value.trim(); }
+
+function validatePage1() {
+  let ok = true;
+  ["department","location","category","description"].forEach(id => {
+    const empty = !val(id);
+    setError("f-" + id, empty);
+    if (empty) ok = false;
+  });
+  return ok;
+}
+
+function validatePage2() {
+  const noP = !selectedPriority;
+  document.getElementById("priority-err").style.display = noP ? "block" : "none";
+  const noR = !val("reporter");
+  setError("f-reporter", noR);
+  return !noP && !noR;
+}
+
+// ── PRIORITY ─────────────────────────────────────────────────────────────────
+function selectPriority(p) {
+  selectedPriority = p;
+  document.querySelectorAll(".priority-btn").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.p === p);
+  });
+  document.getElementById("priority-err").style.display = "none";
+}
+
+// ── PHOTOS ───────────────────────────────────────────────────────────────────
+function handlePhotos(input) {
+  const preview = document.getElementById("photo-preview");
+  photoFiles = Array.from(input.files);
+  preview.innerHTML = "";
+  photoFiles.slice(0, 4).forEach(file => {
+    const img = document.createElement("img");
+    img.className = "photo-thumb";
+    img.src = URL.createObjectURL(file);
+    preview.appendChild(img);
+  });
+}
+
+// ── REVIEW ───────────────────────────────────────────────────────────────────
+function populateReview() {
+  document.getElementById("r-department").textContent   = val("department");
+  document.getElementById("r-location").textContent     = val("location");
+  document.getElementById("r-category").textContent     = val("category");
+  document.getElementById("r-description").textContent  = val("description");
+  document.getElementById("r-reporter").textContent     = val("reporter");
+  document.getElementById("r-contact").textContent      = val("contact") || "—";
+  const pl = PRIORITY_LABELS[selectedPriority];
+  const badge = document.getElementById("r-priority");
+  badge.innerHTML = `<span class="badge ${pl.cls}">${pl.text}</span>`;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────────────────
+async function submitForm() {
+  const loading = document.getElementById("loading");
+  loading.classList.add("active");
+
+  const ticketId = "MT-" + Date.now().toString().slice(-5);
+  const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+
+  const payload = {
+    ticketId,
+    department:  val("department"),
+    location:    val("location"),
+    category:    val("category"),
+    description: val("description"),
+    priority:    selectedPriority,
+    reporter:    val("reporter"),
+    contact:     val("contact"),
+    lineUserId:  lineProfile?.userId || "dev-mode",
+    lineName:    lineProfile?.displayName || "Dev",
+    timestamp:   now,
+  };
+
+  try {
+    // ── POST to Google Apps Script webhook ───────────────────────────────────
+    // Uncomment when Apps Script URL is ready:
+    //
+    // await fetch(CONFIG.WEBHOOK_URL, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(payload),
+    // });
+    //
+    // ── Demo: simulate 1.5s delay ───────────────────────────────────────────
+    await new Promise(r => setTimeout(r, 1500));
+
+    // Show success
+    loading.classList.remove("active");
+    currentPage = 99;
+    document.getElementById("ticket-id-display").textContent = ticketId;
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("success-screen").classList.add("active");
+    updateUI();
+
+  } catch (err) {
+    loading.classList.remove("active");
+    alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง\n" + err.message);
+  }
+}
+
+// ── CLOSE LIFF ───────────────────────────────────────────────────────────────
+function closeLiff() {
+  try { liff.closeWindow(); } catch (e) { window.close(); }
+}
+</script>
+</body>
+</html>
