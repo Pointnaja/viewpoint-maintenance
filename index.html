@@ -5,895 +5,983 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Viewpoint — แจ้งซ่อม</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  /* ── Reset & Base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:        #0E0E10;
-    --surface:   #18181B;
-    --surface2:  #27272A;
-    --border:    #3F3F46;
-    --accent:    #06C755;   /* LINE green */
-    --accent2:   #04A344;
-    --text:      #FAFAFA;
-    --muted:     #A1A1AA;
-    --danger:    #F87171;
-    --urgent:    #FB923C;
-    --high:      #FBBF24;
-    --medium:    #34D399;
-    --low:       #60A5FA;
-    --radius:    14px;
-    --radius-sm: 8px;
-  }
+:root {
+  --ocean:    #0077B6;
+  --sea:      #00B4D8;
+  --sky:      #48CAE4;
+  --foam:     #90E0EF;
+  --mist:     #CAF0F8;
+  --sand:     #F8F4E8;
+  --white:    #FFFFFF;
+  --teal:     #0096C7;
+  --green:    #2DC653;
+  --coral:    #FF6B6B;
+  --amber:    #FFB347;
+  --text:     #0D3B52;
+  --muted:    #5A8A9F;
+  --border:   #B8DDE8;
+  --surface:  #F0F9FC;
+  --urgent:   #FF4444;
+  --high:     #FF8C00;
+  --medium:   #00B4D8;
+  --low:      #2DC653;
+  --r:        16px;
+  --r-sm:     10px;
+}
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
-  }
+html, body {
+  min-height: 100%;
+  background: var(--mist);
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
 
-  /* ── Layout ── */
-  .app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 0 0 40px;
-  }
+/* ── WAVE BG ── */
+.wave-bg {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 220px; z-index: 0; overflow: hidden;
+  background: linear-gradient(160deg, var(--ocean) 0%, var(--sea) 50%, var(--sky) 100%);
+}
+.wave-bg::after {
+  content: '';
+  position: absolute; bottom: -2px; left: -10%; width: 120%; height: 60px;
+  background: var(--mist);
+  border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+}
 
-  /* ── Header ── */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 20px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-  .logo-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px rgba(6,199,85,.2);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 0 3px rgba(6,199,85,.2); }
-    50%      { box-shadow: 0 0 0 6px rgba(6,199,85,.05); }
-  }
-  .header-title {
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-  }
-  .header-sub {
-    font-size: 12px;
-    color: var(--muted);
-    padding-left: 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    letter-spacing: 0.5px;
-  }
-  .user-chip {
-    margin-left: auto;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: var(--muted);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .user-avatar {
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; color: #000; font-weight: 700;
-  }
+.app {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 0 0 50px;
+  display: flex; flex-direction: column;
+}
 
-  /* ── Progress bar ── */
-  .progress-bar {
-    height: 3px;
-    background: var(--surface2);
-    position: relative;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-  }
+/* ── HEADER ── */
+.header {
+  padding: 52px 20px 20px;
+  color: white;
+}
+.header-resort {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase;
+  opacity: 0.8; margin-bottom: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.header-title {
+  font-size: 26px; font-weight: 700; line-height: 1.2;
+  margin-bottom: 2px;
+}
+.header-sub { font-size: 13px; opacity: 0.75; }
 
-  /* ── Steps indicator ── */
-  .steps {
-    display: flex;
-    gap: 0;
-    padding: 0 20px;
-    margin: 16px 0 0;
-  }
-  .step-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    opacity: 0.4;
-    transition: opacity 0.2s;
-  }
-  .step-item.active  { opacity: 1; }
-  .step-item.done    { opacity: 0.7; }
-  .step-dot {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-    font-family: 'IBM Plex Mono', monospace;
-    transition: all 0.25s;
-  }
-  .step-item.active .step-dot {
-    background: var(--accent); border-color: var(--accent);
-    color: #000;
-  }
-  .step-item.done .step-dot {
-    background: var(--surface2); border-color: var(--accent);
-    color: var(--accent);
-  }
-  .step-label { font-size: 10px; color: var(--muted); text-align: center; white-space: nowrap; }
-  .step-connector {
-    flex: 0.5;
-    height: 1.5px;
-    background: var(--border);
-    margin-top: 13px;
-    align-self: flex-start;
-  }
+.user-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 30px;
+  padding: 6px 14px 6px 6px;
+  margin-top: 14px;
+}
+.user-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: white; color: var(--ocean);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.user-name { font-size: 13px; color: white; font-weight: 500; }
 
-  /* ── Form pages ── */
-  .page { display: none; padding: 20px; animation: fadeUp 0.3s ease; }
-  .page.active { display: block; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+/* ── PROGRESS ── */
+.progress-wrap {
+  background: white;
+  margin: 0 16px;
+  border-radius: 20px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 20px rgba(0,119,182,.12);
+  margin-bottom: 16px;
+}
+.steps-row {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 10px;
+}
+.step {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 5px;
+}
+.step-num {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  border: 2px solid var(--border);
+  color: var(--muted);
+  background: white;
+  transition: all 0.3s;
+}
+.step.active .step-num {
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  border-color: transparent; color: white;
+  box-shadow: 0 4px 12px rgba(0,119,182,.35);
+}
+.step.done .step-num {
+  background: var(--green); border-color: transparent;
+  color: white;
+}
+.step-lbl { font-size: 10px; color: var(--muted); font-weight: 500; text-align: center; }
+.step.active .step-lbl { color: var(--ocean); font-weight: 600; }
+.step-line {
+  flex: 0.4; height: 2px; background: var(--border);
+  margin-bottom: 18px; border-radius: 2px;
+  transition: background 0.3s;
+}
+.step-line.done { background: var(--green); }
 
-  .section-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    font-family: 'IBM Plex Mono', monospace;
-    margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+.progress-track {
+  height: 5px; background: var(--mist);
+  border-radius: 10px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ocean), var(--sky));
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
 
-  /* ── Field ── */
-  .field { margin-bottom: 16px; }
-  .field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 7px;
-  }
-  .field label span.req { color: var(--accent); margin-left: 2px; }
+/* ── CARD ── */
+.card {
+  background: white;
+  border-radius: var(--r);
+  margin: 0 16px 14px;
+  padding: 20px;
+  box-shadow: 0 2px 16px rgba(0,119,182,.08);
+}
 
-  select, input, textarea {
-    width: 100%;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.15s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  select:focus, input:focus, textarea:focus {
-    border-color: var(--accent);
-  }
-  select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A1A1AA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-  textarea { resize: none; min-height: 90px; line-height: 1.6; }
-  input::placeholder, textarea::placeholder { color: var(--border); }
+.section-title {
+  font-size: 12px; font-weight: 600;
+  color: var(--sea); letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--mist);
+}
 
-  /* ── Priority selector ── */
-  .priority-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .priority-btn {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; gap: 8px;
-    color: var(--text);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: left;
-  }
-  .priority-btn .p-icon { font-size: 18px; }
-  .priority-btn .p-sub { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
-  .priority-btn.selected[data-p="urgent"] { border-color: var(--urgent); background: rgba(251,146,60,.1); color: var(--urgent); }
-  .priority-btn.selected[data-p="high"]   { border-color: var(--high);   background: rgba(251,191,36,.1); color: var(--high); }
-  .priority-btn.selected[data-p="medium"] { border-color: var(--medium); background: rgba(52,211,153,.1);  color: var(--medium); }
-  .priority-btn.selected[data-p="low"]    { border-color: var(--low);    background: rgba(96,165,250,.1);  color: var(--low); }
+/* ── FIELDS ── */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
 
-  /* ── Photo upload ── */
-  .photo-upload {
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radius-sm);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    position: relative;
-  }
-  .photo-upload:hover { border-color: var(--accent); }
-  .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-  .photo-icon { font-size: 28px; margin-bottom: 6px; }
-  .photo-upload p { font-size: 13px; color: var(--muted); }
-  .photo-upload p strong { color: var(--accent); }
-  .photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .photo-thumb {
-    width: 70px; height: 70px; border-radius: var(--radius-sm);
-    object-fit: cover; border: 1.5px solid var(--border);
-  }
+.field label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--muted); margin-bottom: 7px;
+}
+.req { color: var(--coral); margin-left: 2px; }
 
-  /* ── Review card ── */
-  .review-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 14px;
-  }
-  .review-header {
-    padding: 12px 16px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .review-header-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
-  .review-body { padding: 14px 16px; }
-  .review-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; }
-  .review-row:last-child { margin-bottom: 0; }
-  .review-key { font-size: 12px; color: var(--muted); flex-shrink: 0; }
-  .review-val { font-size: 14px; font-weight: 600; text-align: right; }
+select, input, textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px; font-weight: 400;
+  padding: 11px 14px;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none; -webkit-appearance: none;
+}
+select:focus, input:focus, textarea:focus {
+  border-color: var(--sea);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0,180,216,.12);
+}
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A8A9F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+textarea { resize: none; min-height: 88px; line-height: 1.6; }
+input::placeholder, textarea::placeholder { color: var(--border); }
 
-  /* ── Priority badge in review ── */
-  .badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 20px;
-    font-size: 12px; font-weight: 700;
-  }
-  .badge-urgent { background: rgba(251,146,60,.15); color: var(--urgent); }
-  .badge-high   { background: rgba(251,191,36,.15); color: var(--high); }
-  .badge-medium { background: rgba(52,211,153,.15);  color: var(--medium); }
-  .badge-low    { background: rgba(96,165,250,.15);  color: var(--low); }
+.err { font-size: 12px; color: var(--coral); margin-top: 5px; display: none; }
+.field.has-error select,
+.field.has-error input,
+.field.has-error textarea { border-color: var(--coral); background: #fff5f5; }
+.field.has-error .err { display: block; }
 
-  /* ── Navigation buttons ── */
-  .nav-bar {
-    padding: 16px 20px 0;
-    display: flex;
-    gap: 10px;
-  }
-  .btn {
-    flex: 1;
-    padding: 15px;
-    border-radius: var(--radius);
-    border: none;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-back {
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    flex: 0.6;
-  }
-  .btn-next {
-    background: var(--accent);
-    color: #000;
-  }
-  .btn-next:active { transform: scale(0.98); background: var(--accent2); }
-  .btn-next:disabled { opacity: 0.35; pointer-events: none; }
-  .btn-submit {
-    background: var(--accent);
-    color: #000;
-    width: 100%;
-    margin: 0 20px;
-    width: calc(100% - 40px);
-  }
+/* ── PRIORITY BUTTONS ── */
+.priority-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.p-btn {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--r-sm); padding: 12px 10px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text); font-family: 'Prompt', sans-serif;
+  font-size: 14px; font-weight: 600; text-align: left;
+}
+.p-icon { font-size: 22px; flex-shrink: 0; }
+.p-name { font-size: 13px; font-weight: 600; }
+.p-desc { font-size: 11px; color: var(--muted); font-weight: 400; line-height: 1.3; margin-top: 1px; }
 
-  /* ── Success screen ── */
-  .success-screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 70vh;
-    padding: 40px 20px;
-    text-align: center;
-  }
-  .success-screen.active { display: flex; }
-  .success-ring {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: rgba(6,199,85,.12);
-    border: 2px solid var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
-    margin-bottom: 20px;
-    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes popIn {
-    from { transform: scale(0); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
-  }
-  .ticket-id-display {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent);
-    margin: 12px 0;
-    letter-spacing: 2px;
-  }
-  .line-notify-box {
-    background: rgba(6,199,85,.08);
-    border: 1px solid rgba(6,199,85,.25);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--accent);
-    margin-top: 16px;
-    max-width: 300px;
-  }
-  .btn-close {
-    margin-top: 24px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 13px 32px;
-    color: var(--text);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer;
-  }
+.p-btn[data-p="urgent"].sel { border-color: var(--urgent); background: #fff0f0; }
+.p-btn[data-p="high"].sel   { border-color: var(--high);   background: #fff7ed; }
+.p-btn[data-p="medium"].sel { border-color: var(--medium); background: #f0fbff; }
+.p-btn[data-p="low"].sel    { border-color: var(--low);    background: #f0fff4; }
+.p-btn[data-p="urgent"].sel .p-name { color: var(--urgent); }
+.p-btn[data-p="high"].sel   .p-name { color: var(--high); }
+.p-btn[data-p="medium"].sel .p-name { color: var(--medium); }
+.p-btn[data-p="low"].sel    .p-name { color: var(--low); }
 
-  /* ── Validation error ── */
-  .err { font-size: 12px; color: var(--danger); margin-top: 5px; display: none; }
-  .field.has-error select,
-  .field.has-error input,
-  .field.has-error textarea { border-color: var(--danger); }
-  .field.has-error .err { display: block; }
+/* ── PHOTO ── */
+.photo-zone {
+  border: 2px dashed var(--border); border-radius: var(--r-sm);
+  padding: 18px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s; position: relative;
+  background: var(--surface);
+}
+.photo-zone:hover { border-color: var(--sea); }
+.photo-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-icon-big { font-size: 30px; margin-bottom: 6px; }
+.photo-zone p { font-size: 13px; color: var(--muted); }
+.photo-zone strong { color: var(--ocean); }
+.photo-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.photo-thumb { width: 68px; height: 68px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border); }
 
-  /* ── Loading overlay ── */
-  .loading {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(14,14,16,.85);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-  .loading.active { display: flex; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 14px; color: var(--muted); }
+/* ── REVIEW ── */
+.review-block {
+  background: var(--surface); border-radius: var(--r-sm);
+  overflow: hidden; margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.review-head {
+  background: linear-gradient(90deg, var(--ocean), var(--sea));
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+}
+.review-head span { color: white; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+.review-body { padding: 12px 14px; }
+.r-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 6px 0; border-bottom: 1px solid var(--mist); gap: 12px;
+}
+.r-row:last-child { border-bottom: none; padding-bottom: 0; }
+.r-key { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+.r-val { font-size: 13px; font-weight: 600; text-align: right; color: var(--text); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.badge-urgent { background: #ffe0e0; color: var(--urgent); }
+.badge-high   { background: #fff0d6; color: var(--high); }
+.badge-medium { background: #e0f7ff; color: var(--medium); }
+.badge-low    { background: #e0ffe8; color: var(--low); }
+
+/* ── BUTTONS ── */
+.nav { padding: 4px 16px 0; display: flex; gap: 10px; }
+.btn {
+  flex: 1; padding: 14px;
+  border-radius: var(--r); border: none;
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-back {
+  background: white; color: var(--muted);
+  border: 1.5px solid var(--border); flex: 0.55;
+}
+.btn-next {
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  color: white;
+  box-shadow: 0 6px 20px rgba(0,119,182,.3);
+}
+.btn-next:active { transform: scale(0.98); }
+.btn-next:disabled { opacity: 0.35; pointer-events: none; }
+
+/* ── PAGE ANIM ── */
+.page { display: none; animation: slideUp 0.3s ease; }
+.page.active { display: block; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SUCCESS ── */
+.success {
+  display: none; flex-direction: column;
+  align-items: center; padding: 40px 20px;
+  text-align: center; min-height: 60vh;
+  justify-content: center;
+}
+.success.active { display: flex; }
+.success-wave {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--ocean), var(--sky));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(0,119,182,.3);
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.ticket-box {
+  background: white; border: 2px solid var(--sea);
+  border-radius: var(--r-sm); padding: 10px 24px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px; font-weight: 700; color: var(--ocean);
+  margin: 12px 0; letter-spacing: 2px;
+}
+.line-notify {
+  background: linear-gradient(135deg, rgba(0,180,216,.08), rgba(0,119,182,.08));
+  border: 1px solid rgba(0,180,216,.3);
+  border-radius: var(--r-sm); padding: 12px 18px;
+  font-size: 13px; color: var(--ocean); margin-top: 14px;
+  max-width: 300px; line-height: 1.6;
+}
+.btn-close {
+  margin-top: 24px; background: white;
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 12px 32px; color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+
+/* ── LOADING ── */
+.loading {
+  display: none; position: fixed; inset: 0;
+  background: rgba(202,240,248,.85); backdrop-filter: blur(6px);
+  z-index: 200; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.loading.active { display: flex; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--foam);
+  border-top-color: var(--ocean);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 14px; color: var(--ocean); font-weight: 500; }
+
+/* ── LANG TOGGLE ── */
+.lang-toggle {
+  display: flex; gap: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 3px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+.lang-btn {
+  padding: 4px 10px; border-radius: 16px;
+  border: none; background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 4px;
+}
+.lang-btn.lang-active {
+  background: white;
+  color: var(--ocean);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.notice {
+  background: linear-gradient(90deg, rgba(0,180,216,.1), rgba(72,202,228,.1));
+  border-left: 3px solid var(--sea);
+  margin: 0 16px 14px; border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 10px 14px; font-size: 12px; color: var(--teal);
+}
 </style>
 </head>
 <body>
 
-<!-- Loading overlay -->
+<div class="wave-bg"></div>
 <div class="loading" id="loading">
   <div class="spinner"></div>
-  <div class="loading-text">กำลังส่งข้อมูล...</div>
+  <p id="loading-txt">Submitting...</p>
 </div>
 
 <div class="app">
 
-  <!-- ── HEADER ── -->
+  <!-- HEADER -->
   <div class="header">
-    <div class="header-top">
-      <div class="logo-dot"></div>
-      <span class="header-title">แจ้งซ่อม</span>
-      <div class="user-chip">
-        <div class="user-avatar" id="avatar-initial">S</div>
-        <span id="user-display-name">Staff</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <img src="logo.png" alt="Viewpoint Resort" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.35);background:#111;flex-shrink:0;">
+        <div>
+          <div class="header-resort" id="hdr-resort">Viewpoint Resort · Koh Tao</div>
+          <div class="header-title" id="hdr-title">🔧 Maintenance Request</div>
+          <div class="header-sub" id="hdr-sub">Report a problem</div>
+        </div>
+      </div>
+      <!-- Language Toggle -->
+      <div class="lang-toggle">
+        <button class="lang-btn lang-active" id="btn-en" onclick="switchLang('en')">🇬🇧 EN</button>
+        <button class="lang-btn" id="btn-th" onclick="switchLang('th')">🇹🇭 TH</button>
       </div>
     </div>
-    <div class="header-sub">VIEWPOINT RESORT · KOH TAO</div>
-    <div class="progress-bar" style="margin-top:12px">
-      <div class="progress-fill" id="progress-fill" style="width:33%"></div>
+    <div class="user-pill">
+      <div class="user-avatar" id="avatar-init">S</div>
+      <span class="user-name" id="user-name">Staff</span>
     </div>
   </div>
 
-  <!-- ── STEPS ── -->
-  <div class="steps" id="steps-bar">
-    <div class="step-item active" id="step-1">
-      <div class="step-dot">1</div>
-      <div class="step-label">รายละเอียด</div>
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="steps-row">
+      <div class="step active" id="s1">
+        <div class="step-num">1</div>
+        <div class="step-lbl" id="lbl-s1">Details</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="s2">
+        <div class="step-num">2</div>
+        <div class="step-lbl" id="lbl-s2">Priority</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="s3">
+        <div class="step-num">3</div>
+        <div class="step-lbl" id="lbl-s3">Confirm</div>
+      </div>
     </div>
-    <div class="step-connector"></div>
-    <div class="step-item" id="step-2">
-      <div class="step-dot">2</div>
-      <div class="step-label">ความเร่งด่วน</div>
-    </div>
-    <div class="step-connector"></div>
-    <div class="step-item" id="step-3">
-      <div class="step-dot">3</div>
-      <div class="step-label">ตรวจสอบ</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog" style="width:33%"></div>
     </div>
   </div>
 
-  <!-- ══ PAGE 1: Details ══ -->
-  <div class="page active" id="page-1">
-    <div class="section-label" style="margin-top:20px">ข้อมูลพื้นฐาน</div>
+  <!-- ══ PAGE 1 ══ -->
+  <div class="page active" id="p1">
+    <div class="card">
+      <div class="section-title" id="sec-location">📍 Location & Department</div>
 
-    <div class="field" id="f-department">
-      <label>แผนก <span class="req">*</span></label>
-      <select id="department">
-        <option value="">— เลือกแผนกของคุณ —</option>
-        <option>Front Office</option>
-        <option>Housekeeping</option>
-        <option>F&amp;B Restaurant &amp; Pool</option>
-        <option>F&amp;B Kitchen</option>
-        <option>Chillax Hut</option>
-        <option>Security</option>
-        <option>Gym</option>
-        <option>Admin</option>
-        <option>Staff</option>
-        <option>Shop</option>
-      </select>
-      <div class="err">กรุณาเลือกแผนก</div>
-    </div>
-
-    <div class="field" id="f-location">
-      <label>สถานที่ / ห้อง <span class="req">*</span></label>
-      <select id="location">
-        <option value="">— เลือกสถานที่ —</option>
-        <optgroup label="🌿 Garden Room (G)">
-          <option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option>
-          <option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option>
-        </optgroup>
-        <optgroup label="🌊 Sea View Room (S)">
-          <option>S3</option><option>S4</option><option>S5</option><option>S6</option><option>S7</option>
-          <option>S8</option><option>S9</option><option>S10</option>
-        </optgroup>
-        <optgroup label="🏖 Beachfront Bungalow (B)">
-          <option>B1</option><option>B2</option><option>B3</option>
-        </optgroup>
-        <optgroup label="🏊 Pool Villa">
-          <option>Pool Villa 1</option><option>Pool Villa 2</option><option>Pool Villa 3</option>
-          <option>Pool Villa 4</option><option>Pool Villa 5</option><option>Pool Villa 6</option>
-          <option>Pool Villa 7</option><option>Pool Villa 8</option>
-        </optgroup>
-        <optgroup label="🏨 พื้นที่ส่วนกลาง">
-          <option>Reception</option>
-          <option>Restaurant</option><option>Bar</option><option>Kitchen</option>
-          <option>Pool Area</option>
+      <div class="field" id="f-department">
+        <label id="lbl-dept">Department <span class="req">*</span></label>
+        <select id="department">
+          <option value="">— Select your department —</option>
+          <option>Front Office</option>
+          <option>Housekeeping</option>
+          <option>F&amp;B Restaurant &amp; Pool</option>
+          <option>F&amp;B Kitchen</option>
           <option>Chillax Hut</option>
+          <option>Security</option>
           <option>Gym</option>
-          <option>Garden</option><option>Parking</option>
-          <option>PV Ship</option>
-        </optgroup>
-        <optgroup label="🔧 พื้นที่หลังบ้าน">
-          <option>Staff Room</option><option>Staff Kitchen</option>
-          <option>Laundry</option><option>Storage</option><option>Server Room</option>
-        </optgroup>
-      </select>
-      <div class="err">กรุณาเลือกสถานที่</div>
-    </div>
-
-    <div class="field" id="f-category">
-      <label>ประเภทงานซ่อม <span class="req">*</span></label>
-      <select id="category">
-        <option value="">— เลือกประเภท —</option>
-        <option>⚡ ไฟฟ้า / Electrical</option>
-        <option>🔧 ประปา / Plumbing</option>
-        <option>❄️ แอร์ / Air-Conditioning</option>
-        <option>🪑 เฟอร์นิเจอร์ / Furniture</option>
-        <option>🚪 ประตู / หน้าต่าง</option>
-        <option>📶 อินเทอร์เน็ต / Wi-Fi</option>
-        <option>🧱 โครงสร้าง / Structure</option>
-        <option>🎨 ทาสี / Painting</option>
-        <option>🧹 ทำความสะอาดพิเศษ</option>
-        <option>📦 อุปกรณ์ชำรุด / Equipment</option>
-        <option>⚙️ อื่นๆ / Other</option>
-      </select>
-      <div class="err">กรุณาเลือกประเภทงาน</div>
-    </div>
-
-    <div class="field" id="f-description">
-      <label>อธิบายอาการ / รายละเอียด <span class="req">*</span></label>
-      <textarea id="description" placeholder="เช่น แอร์ไม่เย็น มีเสียงดัง ใช้ไม่ได้ตั้งแต่เช้า..."></textarea>
-      <div class="err">กรุณาอธิบายรายละเอียด</div>
-    </div>
-
-
-
-    <div class="field">
-      <label>แนบรูปภาพ (ถ้ามี)</label>
-      <div class="photo-upload" id="photo-upload-area">
-        <input type="file" accept="image/*" multiple id="photo-input" onchange="handlePhotos(this)">
-        <div class="photo-icon">📷</div>
-        <p><strong>แตะเพื่ออัปโหลด</strong><br>หรือถ่ายรูปจากกล้อง</p>
+          <option>Admin</option>
+          <option>Staff</option>
+          <option>Shop</option>
+        </select>
+        <div class="err" id="err-dept">Please select a department</div>
       </div>
-      <div class="photo-preview" id="photo-preview"></div>
+
+      <div class="field" id="f-location">
+        <label id="lbl-loc">Location / Room <span class="req">*</span></label>
+        <select id="location">
+          <option value="">— Select location —</option>
+          <optgroup label="🌿 Garden Room (G)">
+            <option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option>
+            <option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option>
+          </optgroup>
+          <optgroup label="🌊 Sea View Room (S)">
+            <option>S3</option><option>S4</option><option>S5</option><option>S6</option><option>S7</option>
+            <option>S8</option><option>S9</option><option>S10</option>
+          </optgroup>
+          <optgroup label="🏖 Beachfront Bungalow (B)">
+            <option>B1</option><option>B2</option><option>B3</option>
+          </optgroup>
+          <optgroup label="🏊 Pool Villa">
+            <option>Pool Villa 1</option><option>Pool Villa 2</option><option>Pool Villa 3</option>
+            <option>Pool Villa 4</option><option>Pool Villa 5</option><option>Pool Villa 6</option>
+            <option>Pool Villa 7</option><option>Pool Villa 8</option>
+          </optgroup>
+          <optgroup label="🏨 Common Areas">
+            <option>Reception</option><option>Restaurant</option><option>Bar</option><option>Kitchen</option>
+            <option>Pool Area</option><option>Chillax Hut</option><option>Gym</option>
+            <option>Garden</option><option>Parking</option><option>PV Ship</option>
+          </optgroup>
+          <optgroup label="🔧 Back of House">
+            <option>Staff Room</option><option>Staff Kitchen</option>
+            <option>Laundry</option><option>Storage</option><option>Server Room</option>
+          </optgroup>
+        </select>
+        <div class="err" id="err-loc">Please select a location</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" id="sec-job">🔩 Job Details</div>
+
+      <div class="field" id="f-category">
+        <label id="lbl-cat">Type of Work <span class="req">*</span></label>
+        <select id="category">
+          <option value="">— Select type —</option>
+          <option>⚡ ไฟฟ้า / Electrical</option>
+          <option>🔧 ประปา / Plumbing</option>
+          <option>❄️ แอร์ / Air-Conditioning</option>
+          <option>🪑 เฟอร์นิเจอร์ / Furniture</option>
+          <option>🚪 ประตู / หน้าต่าง / Door & Window</option>
+          <option>📶 อินเทอร์เน็ต / Wi-Fi</option>
+          <option>🧱 โครงสร้าง / Structure</option>
+          <option>🎨 ทาสี / Painting</option>
+          <option>🧹 ทำความสะอาดพิเศษ / Deep Clean</option>
+          <option>📦 อุปกรณ์ชำรุด / Equipment</option>
+          <option>⚙️ อื่นๆ / Other</option>
+        </select>
+        <div class="err" id="err-cat">Please select a type</div>
+      </div>
+
+      <div class="field" id="f-description">
+        <label id="lbl-desc">Problem Description <span class="req">*</span></label>
+        <textarea id="description" placeholder="e.g. AC not cooling, loud noise since morning..."></textarea>
+        <div class="err" id="err-desc">Please describe the problem</div>
+      </div>
+
+      <div class="field">
+        <label id="lbl-photo">📷 Attach Photos (optional)</label>
+        <div class="photo-zone">
+          <input type="file" accept="image/*" multiple id="photo-input" onchange="handlePhoto(this)">
+          <div class="photo-icon-big">🌊</div>
+          <p><strong id="photo-hint">Tap to upload or take a photo</strong></p>
+        </div>
+        <div class="photo-thumbs" id="photo-thumbs"></div>
+      </div>
     </div>
   </div>
 
-  <!-- ══ PAGE 2: Priority ══ -->
-  <div class="page" id="page-2">
-    <div class="section-label" style="margin-top:20px">ระดับความเร่งด่วน</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:18px">เลือกตามความรุนแรงของปัญหาและผลกระทบต่อแขกหรือการดำเนินงาน</p>
+  <!-- ══ PAGE 2 ══ -->
+  <div class="page" id="p2">
+    <div class="card">
+      <div class="section-title" id="sec-priority">⚡ Priority Level</div>
+      <p id="lbl-priority-sub" style="font-size:13px;color:var(--muted);margin-bottom:16px">Select based on impact to guests and operations</p>
 
-    <div class="priority-grid" id="priority-grid">
-      <button class="priority-btn" data-p="urgent" onclick="selectPriority('urgent')">
-        <span class="p-icon">🔴</span>
-        <div>
-          <span>Urgent</span>
-          <span class="p-sub">ต้องแก้ทันที<br>กระทบแขกโดยตรง</span>
-        </div>
-      </button>
-      <button class="priority-btn" data-p="high" onclick="selectPriority('high')">
-        <span class="p-icon">🟠</span>
-        <div>
-          <span>High</span>
-          <span class="p-sub">แก้ภายในวันนี้<br>กระทบการให้บริการ</span>
-        </div>
-      </button>
-      <button class="priority-btn" data-p="medium" onclick="selectPriority('medium')">
-        <span class="p-icon">🟡</span>
-        <div>
-          <span>Medium</span>
-          <span class="p-sub">แก้ภายใน 1–2 วัน<br>ยังใช้งานได้บางส่วน</span>
-        </div>
-      </button>
-      <button class="priority-btn" data-p="low" onclick="selectPriority('low')">
-        <span class="p-icon">🟢</span>
-        <div>
-          <span>Low</span>
-          <span class="p-sub">แก้ตามคิว<br>ไม่กระทบการบริการ</span>
-        </div>
-      </button>
+      <div class="priority-grid" id="pgrid">
+        <button class="p-btn" data-p="urgent" onclick="pickP('urgent')">
+          <span class="p-icon">🔴</span>
+          <div><div class="p-name" id="p-urgent-name">Urgent</div><div class="p-desc" id="p-urgent-desc">Fix immediately · Direct guest impact</div></div>
+        </button>
+        <button class="p-btn" data-p="high" onclick="pickP('high')">
+          <span class="p-icon">🟠</span>
+          <div><div class="p-name" id="p-high-name">High</div><div class="p-desc" id="p-high-desc">Fix today · Affects service</div></div>
+        </button>
+        <button class="p-btn" data-p="medium" onclick="pickP('medium')">
+          <span class="p-icon">🟡</span>
+          <div><div class="p-name" id="p-medium-name">Medium</div><div class="p-desc" id="p-medium-desc">Fix within 1–2 days</div></div>
+        </button>
+        <button class="p-btn" data-p="low" onclick="pickP('low')">
+          <span class="p-icon">🟢</span>
+          <div><div class="p-name" id="p-low-name">Low</div><div class="p-desc" id="p-low-desc">Fix when available</div></div>
+        </button>
+      </div>
+      <div class="err" id="p-err" style="margin-top:8px">Please select a priority level</div>
     </div>
 
-    <div style="margin-top:20px" class="field" id="f-priority">
-      <div class="err" style="display:none" id="priority-err">กรุณาเลือกระดับความเร่งด่วน</div>
-    </div>
+    <div class="card">
+      <div class="section-title" id="sec-reporter">👤 Reporter</div>
 
-    <div class="field" id="f-reporter" style="margin-top:20px">
-      <label>ชื่อผู้แจ้ง <span class="req">*</span></label>
-      <input type="text" id="reporter" placeholder="ชื่อ-นามสกุล หรือชื่อเล่น">
-      <div class="err">กรุณาใส่ชื่อผู้แจ้ง</div>
-    </div>
+      <div class="field" id="f-reporter">
+        <label id="lbl-reporter">Your Name <span class="req">*</span></label>
+        <input type="text" id="reporter" placeholder="Full name or nickname">
+        <div class="err" id="err-reporter">Please enter your name</div>
+      </div>
 
-    <div class="field">
-      <label>เบอร์โทร / ช่องทางติดต่อ (ถ้ามี)</label>
-      <input type="tel" id="contact" placeholder="เช่น ต่อ 101 หรือ LINE: @name">
+      <div class="field">
+        <label id="lbl-contact">Contact (optional)</label>
+        <input type="tel" id="contact" placeholder="e.g. Ext. 101 or LINE: @name">
+      </div>
     </div>
   </div>
 
-  <!-- ══ PAGE 3: Review ══ -->
-  <div class="page" id="page-3">
-    <div class="section-label" style="margin-top:20px">ตรวจสอบก่อนส่ง</div>
-
-    <div class="review-card">
-      <div class="review-header">
-        <span style="font-size:16px">📍</span>
-        <span class="review-header-label">สถานที่ & แผนก</span>
-      </div>
-      <div class="review-body">
-        <div class="review-row">
-          <span class="review-key">แผนก</span>
-          <span class="review-val" id="r-department">—</span>
-        </div>
-        <div class="review-row">
-          <span class="review-key">สถานที่</span>
-          <span class="review-val" id="r-location">—</span>
+  <!-- ══ PAGE 3 ══ -->
+  <div class="page" id="p3">
+    <div class="notice" id="notice-txt">📱 LINE notification will be sent to Maintenance team immediately</div>
+    <div class="card">
+      <div class="review-block">
+        <div class="review-head"><span id="sec-review1">📍 Location & Department</span></div>
+        <div class="review-body">
+          <div class="r-row"><span class="r-key" id="rk-dept">Department</span><span class="r-val" id="r-dept">—</span></div>
+          <div class="r-row"><span class="r-key" id="rk-loc">Location</span><span class="r-val" id="r-loc">—</span></div>
         </div>
       </div>
-    </div>
-
-    <div class="review-card">
-      <div class="review-header">
-        <span style="font-size:16px">🔧</span>
-        <span class="review-header-label">รายละเอียดงาน</span>
+      <div class="review-block">
+        <div class="review-head"><span id="sec-review2">🔩 Job Details</span></div>
+        <div class="review-body">
+          <div class="r-row"><span class="r-key" id="rk-type">Type</span><span class="r-val" id="r-cat">—</span></div>
+          <div class="r-row"><span class="r-key" id="rk-desc">Description</span><span class="r-val" id="r-desc" style="font-size:12px;max-width:200px">—</span></div>
+          <div class="r-row"><span class="r-key" id="rk-pri">Priority</span><span class="r-val" id="r-pri">—</span></div>
+        </div>
       </div>
-      <div class="review-body">
-        <div class="review-row">
-          <span class="review-key">ประเภท</span>
-          <span class="review-val" id="r-category">—</span>
-        </div>
-        <div class="review-row">
-          <span class="review-key">อาการ</span>
-          <span class="review-val" id="r-description" style="font-size:13px;text-align:right;max-width:200px">—</span>
-        </div>
-        <div class="review-row">
-          <span class="review-key">ความเร่งด่วน</span>
-          <span class="review-val" id="r-priority">—</span>
+      <div class="review-block">
+        <div class="review-head"><span id="sec-review3">👤 Reporter</span></div>
+        <div class="review-body">
+          <div class="r-row"><span class="r-key" id="rk-name">Name</span><span class="r-val" id="r-rep">—</span></div>
+          <div class="r-row"><span class="r-key" id="rk-contact">Contact</span><span class="r-val" id="r-con" style="font-size:12px">—</span></div>
         </div>
       </div>
     </div>
-
-    <div class="review-card">
-      <div class="review-header">
-        <span style="font-size:16px">👤</span>
-        <span class="review-header-label">ผู้แจ้ง</span>
-      </div>
-      <div class="review-body">
-        <div class="review-row">
-          <span class="review-key">ชื่อ</span>
-          <span class="review-val" id="r-reporter">—</span>
-        </div>
-        <div class="review-row">
-          <span class="review-key">ติดต่อ</span>
-          <span class="review-val" id="r-contact" style="font-size:13px">—</span>
-        </div>
-      </div>
-    </div>
-
-    <p style="font-size:12px;color:var(--muted);text-align:center;padding:0 20px 4px">
-      📱 ระบบจะส่ง LINE แจ้งทีม Maintenance ทันทีหลังยืนยัน
-    </p>
   </div>
 
-  <!-- ══ SUCCESS ══ -->
-  <div class="success-screen" id="success-screen">
-    <div class="success-ring">✓</div>
-    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">ส่งสำเร็จ!</h2>
-    <p style="color:var(--muted);font-size:14px">คำขอแจ้งซ่อมถูกบันทึกแล้ว</p>
-    <div class="ticket-id-display" id="ticket-id-display">MT-000</div>
-    <p style="color:var(--muted);font-size:13px">หมายเลข Ticket ของคุณ</p>
-    <div class="line-notify-box">
-      📲 ส่ง LINE แจ้งทีม Maintenance แล้ว<br>
-      <span style="font-size:11px;opacity:0.8">คุณจะได้รับ update เมื่อสถานะเปลี่ยน</span>
+  <!-- SUCCESS -->
+  <div class="success" id="success">
+    <div class="success-wave">✓</div>
+    <h2 id="suc-title" style="font-size:24px;font-weight:700;color:var(--ocean)">Submitted!</h2>
+    <p id="suc-sub" style="color:var(--muted);font-size:14px;margin-top:4px">Your maintenance request has been recorded</p>
+    <div class="ticket-box" id="ticket-box">MT-00000</div>
+    <p id="suc-ticket" style="color:var(--muted);font-size:12px">Your Ticket Number</p>
+    <div class="line-notify">
+      <span id="suc-line1">🌊 LINE notification sent to Maintenance team</span><br>
+      <span id="suc-line2" style="font-size:11px;opacity:0.8">You will receive updates when the status changes</span>
     </div>
-    <button class="btn-close" onclick="closeLiff()">ปิดหน้าต่าง</button>
+    <button class="btn-close" id="btn-close" onclick="closeLiff()">Close</button>
   </div>
 
-  <!-- ── NAV BUTTONS ── -->
-  <div class="nav-bar" id="nav-bar">
-    <button class="btn btn-back" id="btn-back" onclick="prevPage()" style="display:none">← กลับ</button>
-    <button class="btn btn-next" id="btn-next" onclick="nextPage()">ถัดไป →</button>
+  <!-- NAV -->
+  <div class="nav" id="nav">
+    <button class="btn btn-back" id="btn-back" onclick="prev()" style="display:none">← Back</button>
+    <button class="btn btn-next" id="btn-next" onclick="next()">Next →</button>
   </div>
 
-</div><!-- end .app -->
+</div>
 
 <script>
-// ── CONFIG (แก้ค่าเหล่านี้) ──────────────────────────────────────────────────
 const CONFIG = {
-  LIFF_ID:        "2010069721-aq08g8I1",         // ✅ LIFF ID
-  WEBHOOK_URL:    "YOUR_GOOGLE_APPS_SCRIPT_URL", // ← ใส่ URL ของ Apps Script
-  LINE_GROUP_ID:  "YOUR_LINE_GROUP_ID",          // ← Group ID ทีม Maintenance
-};
-// ─────────────────────────────────────────────────────────────────────────────
-
-let currentPage = 1;
-let selectedPriority = "";
-let lineProfile = null;
-let photoFiles = [];
-
-const PRIORITY_LABELS = {
-  urgent: { text: "🔴 Urgent — เร่งด่วนมาก", cls: "badge-urgent" },
-  high:   { text: "🟠 High — เร่งด่วน",      cls: "badge-high" },
-  medium: { text: "🟡 Medium — ปกติ",         cls: "badge-medium" },
-  low:    { text: "🟢 Low — ไม่เร่งด่วน",     cls: "badge-low" },
+  LIFF_ID:     "2010069721-aq08g8I1",
+  WEBHOOK_URL: "YOUR_GOOGLE_APPS_SCRIPT_URL",
 };
 
-// ── LIFF INIT ─────────────────────────────────────────────────────────────────
+// ── i18n STRINGS ─────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    title:        "🔧 Maintenance Request",
+    subtitle:     "Report a problem",
+    resort:       "Viewpoint Resort · Koh Tao",
+    step1:        "Details", step2: "Priority", step3: "Confirm",
+    sec_location: "📍 Location & Department",
+    sec_job:      "🔩 Job Details",
+    sec_priority: "⚡ Priority Level",
+    sec_reporter: "👤 Reporter",
+    sec_review1:  "📍 Location & Department",
+    sec_review2:  "🔩 Job Details",
+    sec_review3:  "👤 Reporter",
+    lbl_dept:     "Department", lbl_loc: "Location / Room",
+    lbl_cat:      "Type of Work", lbl_desc: "Problem Description",
+    lbl_photo:    "📷 Attach Photos (optional)",
+    lbl_priority: "Select based on impact to guests and operations",
+    lbl_reporter: "Your Name", lbl_contact: "Contact (optional)",
+    ph_dept:      "— Select your department —",
+    ph_loc:       "— Select location —",
+    ph_cat:       "— Select type —",
+    ph_desc:      "e.g. AC not cooling, loud noise since morning...",
+    ph_reporter:  "Full name or nickname",
+    ph_contact:   "e.g. Ext. 101 or LINE: @name",
+    ph_photo:     "Tap to upload or take a photo",
+    err_dept:     "Please select a department",
+    err_loc:      "Please select a location",
+    err_cat:      "Please select a type",
+    err_desc:     "Please describe the problem",
+    err_priority: "Please select a priority level",
+    err_reporter: "Please enter your name",
+    p_urgent_name:"Urgent", p_urgent_desc:"Fix immediately · Direct guest impact",
+    p_high_name:  "High",   p_high_desc:  "Fix today · Affects service",
+    p_medium_name:"Medium", p_medium_desc:"Fix within 1–2 days",
+    p_low_name:   "Low",    p_low_desc:   "Fix when available",
+    notice:       "📱 LINE notification will be sent to Maintenance team immediately",
+    r_dept:       "Department", r_loc: "Location",
+    r_type:       "Type", r_desc: "Description", r_pri: "Priority",
+    r_name:       "Name", r_contact: "Contact",
+    btn_next:     "Next →", btn_back: "← Back", btn_confirm: "✓ Confirm",
+    btn_close:    "Close",
+    success_title:"Submitted!",
+    success_sub:  "Your maintenance request has been recorded",
+    success_ticket:"Your Ticket Number",
+    success_line: "🌊 LINE notification sent to Maintenance team",
+    success_line2:"You will receive updates when the status changes",
+    loading:      "Submitting...",
+  },
+  th: {
+    title:        "🔧 แจ้งซ่อมบำรุง",
+    subtitle:     "รายงานปัญหาเพื่อแก้ไข",
+    resort:       "วิวพอยท์ รีสอร์ท · เกาะเต่า",
+    step1:        "รายละเอียด", step2: "ความเร่งด่วน", step3: "ยืนยัน",
+    sec_location: "📍 สถานที่ & แผนก",
+    sec_job:      "🔩 รายละเอียดงาน",
+    sec_priority: "⚡ ระดับความเร่งด่วน",
+    sec_reporter: "👤 ผู้แจ้ง",
+    sec_review1:  "📍 สถานที่ & แผนก",
+    sec_review2:  "🔩 รายละเอียดงาน",
+    sec_review3:  "👤 ผู้แจ้ง",
+    lbl_dept:     "แผนก", lbl_loc: "สถานที่ / ห้อง",
+    lbl_cat:      "ประเภทงานซ่อม", lbl_desc: "อธิบายอาการ / รายละเอียด",
+    lbl_photo:    "📷 แนบรูปภาพ (ถ้ามี)",
+    lbl_priority: "เลือกตามผลกระทบต่อแขกและการดำเนินงาน",
+    lbl_reporter: "ชื่อผู้แจ้ง", lbl_contact: "ช่องทางติดต่อ (ถ้ามี)",
+    ph_dept:      "— เลือกแผนกของคุณ —",
+    ph_loc:       "— เลือกสถานที่ —",
+    ph_cat:       "— เลือกประเภท —",
+    ph_desc:      "เช่น แอร์ไม่เย็น มีเสียงดัง ใช้ไม่ได้ตั้งแต่เช้า...",
+    ph_reporter:  "ชื่อ-นามสกุล หรือชื่อเล่น",
+    ph_contact:   "เช่น ต่อ 101 หรือ LINE: @name",
+    ph_photo:     "แตะเพื่ออัปโหลด หรือถ่ายรูปจากกล้อง",
+    err_dept:     "กรุณาเลือกแผนก",
+    err_loc:      "กรุณาเลือกสถานที่",
+    err_cat:      "กรุณาเลือกประเภทงาน",
+    err_desc:     "กรุณาอธิบายรายละเอียด",
+    err_priority: "กรุณาเลือกระดับความเร่งด่วน",
+    err_reporter: "กรุณาใส่ชื่อผู้แจ้ง",
+    p_urgent_name:"เร่งด่วนมาก", p_urgent_desc:"แก้ทันที กระทบแขกโดยตรง",
+    p_high_name:  "เร่งด่วน",    p_high_desc:  "แก้ภายในวันนี้",
+    p_medium_name:"ปานกลาง",     p_medium_desc:"แก้ภายใน 1–2 วัน",
+    p_low_name:   "ไม่เร่งด่วน", p_low_desc:   "แก้ตามคิว",
+    notice:       "📱 ระบบจะส่ง LINE แจ้งทีม Maintenance ทันทีหลังยืนยัน",
+    r_dept:       "แผนก", r_loc: "สถานที่",
+    r_type:       "ประเภท", r_desc: "อาการ", r_pri: "ความเร่งด่วน",
+    r_name:       "ชื่อ", r_contact: "ติดต่อ",
+    btn_next:     "ถัดไป →", btn_back: "← กลับ", btn_confirm: "✓ ยืนยันส่ง",
+    btn_close:    "ปิดหน้าต่าง",
+    success_title:"ส่งสำเร็จ!",
+    success_sub:  "คำขอแจ้งซ่อมถูกบันทึกแล้ว",
+    success_ticket:"หมายเลข Ticket ของคุณ",
+    success_line: "🌊 ส่ง LINE แจ้งทีม Maintenance แล้ว",
+    success_line2:"คุณจะได้รับการอัปเดตเมื่อสถานะเปลี่ยน",
+    loading:      "กำลังส่งข้อมูล...",
+  }
+};
+
+const PRI_LABELS = {
+  urgent: { cls: "badge-urgent" },
+  high:   { cls: "badge-high"   },
+  medium: { cls: "badge-medium" },
+  low:    { cls: "badge-low"    },
+};
+
+let lang = "en", page = 1, priority = "", profile = null;
+
+// ── APPLY LANGUAGE ────────────────────────────────────────────────────────────
+function applyLang() {
+  const t = T[lang];
+  document.documentElement.lang = lang === "th" ? "th" : "en";
+
+  // Header
+  document.getElementById("hdr-resort").textContent  = t.resort;
+  document.getElementById("hdr-title").textContent   = t.title;
+  document.getElementById("hdr-sub").textContent     = t.subtitle;
+
+  // Steps
+  document.getElementById("lbl-s1").textContent = t.step1;
+  document.getElementById("lbl-s2").textContent = t.step2;
+  document.getElementById("lbl-s3").textContent = t.step3;
+
+  // Section titles
+  document.getElementById("sec-location").textContent = t.sec_location;
+  document.getElementById("sec-job").textContent      = t.sec_job;
+  document.getElementById("sec-priority").textContent = t.sec_priority;
+  document.getElementById("sec-reporter").textContent = t.sec_reporter;
+  document.getElementById("sec-review1").textContent  = t.sec_review1;
+  document.getElementById("sec-review2").textContent  = t.sec_review2;
+  document.getElementById("sec-review3").textContent  = t.sec_review3;
+
+  // Labels
+  document.getElementById("lbl-dept").childNodes[0].textContent     = t.lbl_dept + " ";
+  document.getElementById("lbl-loc").childNodes[0].textContent      = t.lbl_loc + " ";
+  document.getElementById("lbl-cat").childNodes[0].textContent      = t.lbl_cat + " ";
+  document.getElementById("lbl-desc").childNodes[0].textContent     = t.lbl_desc + " ";
+  document.getElementById("lbl-photo").textContent                  = t.lbl_photo;
+  document.getElementById("lbl-priority-sub").textContent           = t.lbl_priority;
+  document.getElementById("lbl-reporter").childNodes[0].textContent = t.lbl_reporter + " ";
+  document.getElementById("lbl-contact").textContent                = t.lbl_contact;
+
+  // Placeholders
+  document.getElementById("department").options[0].text = t.ph_dept;
+  document.getElementById("location").options[0].text   = t.ph_loc;
+  document.getElementById("category").options[0].text   = t.ph_cat;
+  document.getElementById("description").placeholder    = t.ph_desc;
+  document.getElementById("reporter").placeholder       = t.ph_reporter;
+  document.getElementById("contact").placeholder        = t.ph_contact;
+  document.getElementById("photo-hint").textContent     = t.ph_photo;
+
+  // Error messages
+  document.getElementById("err-dept").textContent     = t.err_dept;
+  document.getElementById("err-loc").textContent      = t.err_loc;
+  document.getElementById("err-cat").textContent      = t.err_cat;
+  document.getElementById("err-desc").textContent     = t.err_desc;
+  document.getElementById("p-err").textContent        = t.err_priority;
+  document.getElementById("err-reporter").textContent = t.err_reporter;
+
+  // Priority buttons
+  document.getElementById("p-urgent-name").textContent = t.p_urgent_name;
+  document.getElementById("p-urgent-desc").textContent = t.p_urgent_desc;
+  document.getElementById("p-high-name").textContent   = t.p_high_name;
+  document.getElementById("p-high-desc").textContent   = t.p_high_desc;
+  document.getElementById("p-medium-name").textContent = t.p_medium_name;
+  document.getElementById("p-medium-desc").textContent = t.p_medium_desc;
+  document.getElementById("p-low-name").textContent    = t.p_low_name;
+  document.getElementById("p-low-desc").textContent    = t.p_low_desc;
+
+  // Notice & review keys
+  document.getElementById("notice-txt").textContent = t.notice;
+  document.getElementById("rk-dept").textContent    = t.r_dept;
+  document.getElementById("rk-loc").textContent     = t.r_loc;
+  document.getElementById("rk-type").textContent    = t.r_type;
+  document.getElementById("rk-desc").textContent    = t.r_desc;
+  document.getElementById("rk-pri").textContent     = t.r_pri;
+  document.getElementById("rk-name").textContent    = t.r_name;
+  document.getElementById("rk-contact").textContent = t.r_contact;
+
+  // Buttons
+  document.getElementById("btn-back").textContent = t.btn_back;
+  document.getElementById("btn-next").textContent = page === 3 ? t.btn_confirm : t.btn_next;
+  document.getElementById("btn-close").textContent = t.btn_close;
+
+  // Success
+  document.getElementById("suc-title").textContent  = t.success_title;
+  document.getElementById("suc-sub").textContent    = t.success_sub;
+  document.getElementById("suc-ticket").textContent = t.success_ticket;
+  document.getElementById("suc-line1").textContent  = t.success_line;
+  document.getElementById("suc-line2").textContent  = t.success_line2;
+
+  // Loading
+  document.getElementById("loading-txt").textContent = t.loading;
+
+  // Lang toggle buttons
+  document.getElementById("btn-en").classList.toggle("lang-active", lang === "en");
+  document.getElementById("btn-th").classList.toggle("lang-active", lang === "th");
+}
+
+function switchLang(l) {
+  lang = l;
+  applyLang();
+}
+
+// ── LIFF ──
 async function initLiff() {
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: location.href });
-      return;
-    }
-    lineProfile = await liff.getProfile();
-    document.getElementById("user-display-name").textContent = lineProfile.displayName.split(" ")[0];
-    document.getElementById("avatar-initial").textContent = lineProfile.displayName.charAt(0).toUpperCase();
-    // Pre-fill reporter name
-    document.getElementById("reporter").value = lineProfile.displayName;
-  } catch (e) {
-    // Dev mode fallback (not in LINE)
-    console.log("LIFF init failed (dev mode):", e.message);
-  }
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+    profile = await liff.getProfile();
+    document.getElementById("user-name").textContent = profile.displayName.split(" ")[0];
+    document.getElementById("avatar-init").textContent = profile.displayName.charAt(0).toUpperCase();
+    document.getElementById("reporter").value = profile.displayName;
+  } catch(e) { console.log("dev mode:", e.message); }
 }
 initLiff();
+applyLang();
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
+// ── UI ──
 function updateUI() {
-  // Pages
-  document.querySelectorAll(".page").forEach((p, i) => {
-    p.classList.toggle("active", i + 1 === currentPage);
+  const t = T[lang];
+  [1,2,3].forEach(i => {
+    const s = document.getElementById("p"+i);
+    const st = document.getElementById("s"+i);
+    s.classList.toggle("active", i === page);
+    st.classList.remove("active","done");
+    if (i === page) st.classList.add("active");
+    else if (i < page) st.classList.add("done");
   });
-  // Steps
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById("step-" + i);
-    el.classList.remove("active", "done");
-    if (i === currentPage) el.classList.add("active");
-    else if (i < currentPage) el.classList.add("done");
-  }
-  // Progress
-  document.getElementById("progress-fill").style.width = (currentPage / 3 * 100) + "%";
-  // Buttons
-  document.getElementById("btn-back").style.display = currentPage > 1 ? "" : "none";
-  document.getElementById("btn-next").textContent = currentPage === 3 ? "✓ ยืนยันส่ง" : "ถัดไป →";
-  // Nav bar hide on success
-  document.getElementById("nav-bar").style.display = currentPage > 3 ? "none" : "";
-  document.getElementById("steps-bar").style.display = currentPage > 3 ? "none" : "";
-}
-
-function nextPage() {
-  if (currentPage === 1 && !validatePage1()) return;
-  if (currentPage === 2 && !validatePage2()) return;
-  if (currentPage === 3) { submitForm(); return; }
-  currentPage++;
-  if (currentPage === 3) populateReview();
-  updateUI();
+  [1,2].forEach(i => document.getElementById("line"+i).classList.toggle("done", i < page));
+  document.getElementById("prog").style.width = (page/3*100)+"%";
+  document.getElementById("btn-back").style.display = page > 1 ? "" : "none";
+  document.getElementById("btn-next").textContent = page === 3 ? t.btn_confirm : t.btn_next;
+  document.getElementById("nav").style.display = page > 3 ? "none" : "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function prevPage() {
-  if (currentPage > 1) { currentPage--; updateUI(); }
+function next() {
+  if (page === 1 && !v1()) return;
+  if (page === 2 && !v2()) return;
+  if (page === 3) { submit(); return; }
+  page++;
+  if (page === 3) fillReview();
+  updateUI();
 }
+function prev() { if (page > 1) { page--; updateUI(); } }
 
-// ── VALIDATION ────────────────────────────────────────────────────────────────
-function setError(fieldId, hasError) {
-  document.getElementById(fieldId).classList.toggle("has-error", hasError);
-}
-function val(id) { return document.getElementById(id).value.trim(); }
+function g(id) { return document.getElementById(id).value.trim(); }
+function setErr(fid, has) { document.getElementById(fid).classList.toggle("has-error", has); }
 
-function validatePage1() {
+function v1() {
   let ok = true;
   ["department","location","category","description"].forEach(id => {
-    const empty = !val(id);
-    setError("f-" + id, empty);
-    if (empty) ok = false;
+    const e = !g(id); setErr("f-"+id, e); if(e) ok=false;
   });
   return ok;
 }
-
-function validatePage2() {
-  const noP = !selectedPriority;
-  document.getElementById("priority-err").style.display = noP ? "block" : "none";
-  const noR = !val("reporter");
-  setError("f-reporter", noR);
+function v2() {
+  const noP = !priority;
+  document.getElementById("p-err").style.display = noP ? "block" : "none";
+  const noR = !g("reporter");
+  setErr("f-reporter", noR);
   return !noP && !noR;
 }
 
-// ── PRIORITY ─────────────────────────────────────────────────────────────────
-function selectPriority(p) {
-  selectedPriority = p;
-  document.querySelectorAll(".priority-btn").forEach(btn => {
-    btn.classList.toggle("selected", btn.dataset.p === p);
-  });
-  document.getElementById("priority-err").style.display = "none";
+function pickP(p) {
+  priority = p;
+  document.querySelectorAll(".p-btn").forEach(b => b.classList.toggle("sel", b.dataset.p === p));
+  document.getElementById("p-err").style.display = "none";
 }
 
-// ── PHOTOS ───────────────────────────────────────────────────────────────────
-function handlePhotos(input) {
-  const preview = document.getElementById("photo-preview");
-  photoFiles = Array.from(input.files);
-  preview.innerHTML = "";
-  photoFiles.slice(0, 4).forEach(file => {
+function handlePhoto(input) {
+  const wrap = document.getElementById("photo-thumbs");
+  wrap.innerHTML = "";
+  Array.from(input.files).slice(0,4).forEach(f => {
     const img = document.createElement("img");
     img.className = "photo-thumb";
-    img.src = URL.createObjectURL(file);
-    preview.appendChild(img);
+    img.src = URL.createObjectURL(f);
+    wrap.appendChild(img);
   });
 }
 
-// ── REVIEW ───────────────────────────────────────────────────────────────────
-function populateReview() {
-  document.getElementById("r-department").textContent   = val("department");
-  document.getElementById("r-location").textContent     = val("location");
-  document.getElementById("r-category").textContent     = val("category");
-  document.getElementById("r-description").textContent  = val("description");
-  document.getElementById("r-reporter").textContent     = val("reporter");
-  document.getElementById("r-contact").textContent      = val("contact") || "—";
-  const pl = PRIORITY_LABELS[selectedPriority];
-  const badge = document.getElementById("r-priority");
-  badge.innerHTML = `<span class="badge ${pl.cls}">${pl.text}</span>`;
+function fillReview() {
+  document.getElementById("r-dept").textContent = g("department");
+  document.getElementById("r-loc").textContent  = g("location");
+  document.getElementById("r-cat").textContent  = g("category");
+  document.getElementById("r-desc").textContent = g("description");
+  document.getElementById("r-rep").textContent  = g("reporter");
+  document.getElementById("r-con").textContent  = g("contact") || "—";
+  const p = PRI_LABELS[priority];
+  const pName = T[lang]["p_"+priority+"_name"];
+  document.getElementById("r-pri").innerHTML = `<span class="badge ${p.cls}">● ${pName}</span>`;
 }
 
-// ── SUBMIT ───────────────────────────────────────────────────────────────────
-async function submitForm() {
-  const loading = document.getElementById("loading");
-  loading.classList.add("active");
-
+async function submit() {
+  document.getElementById("loading").classList.add("active");
   const ticketId = "MT-" + Date.now().toString().slice(-5);
-  const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
-
   const payload = {
-    ticketId,
-    department:  val("department"),
-    location:    val("location"),
-    category:    val("category"),
-    description: val("description"),
-    priority:    selectedPriority,
-    reporter:    val("reporter"),
-    contact:     val("contact"),
-    lineUserId:  lineProfile?.userId || "dev-mode",
-    lineName:    lineProfile?.displayName || "Dev",
-    timestamp:   now,
+    ticketId, priority,
+    department: g("department"), location: g("location"),
+    category: g("category"), description: g("description"),
+    reporter: g("reporter"), contact: g("contact"),
+    lineUserId: profile?.userId || "dev",
+    lineName: profile?.displayName || "Dev",
+    timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
   };
-
   try {
-    // ── POST to Google Apps Script webhook ───────────────────────────────────
-    // Uncomment when Apps Script URL is ready:
-    //
-    // await fetch(CONFIG.WEBHOOK_URL, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(payload),
-    // });
-    //
-    // ── Demo: simulate 1.5s delay ───────────────────────────────────────────
+    // await fetch(CONFIG.WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
     await new Promise(r => setTimeout(r, 1500));
-
-    // Show success
-    loading.classList.remove("active");
-    currentPage = 99;
-    document.getElementById("ticket-id-display").textContent = ticketId;
+    document.getElementById("loading").classList.remove("active");
+    document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById("success-screen").classList.add("active");
-    updateUI();
-
-  } catch (err) {
-    loading.classList.remove("active");
-    alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง\n" + err.message);
+    document.getElementById("success").classList.add("active");
+    page = 99; updateUI();
+  } catch(err) {
+    document.getElementById("loading").classList.remove("active");
+    alert(T[lang].err_desc + "\n" + err.message);
   }
 }
 
-// ── CLOSE LIFF ───────────────────────────────────────────────────────────────
 function closeLiff() {
-  try { liff.closeWindow(); } catch (e) { window.close(); }
+  try { liff.closeWindow(); } catch(e) { window.close(); }
 }
 </script>
 </body>
