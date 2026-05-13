@@ -983,9 +983,16 @@ async function submit() {
 
     const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
 
-    // fire-and-forget: ส่งแล้วไม่รอ response (หลีก CORS ของ LIFF)
-    fetch(webhookUrl, { method: "GET", mode: "no-cors" }).catch(() => {});
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // ส่งข้อมูลผ่าน XMLHttpRequest แบบ sync (หลีก LIFF fetch restriction)
+    await new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", webhookUrl, true);
+      xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
+      xhr.onerror = () => resolve();
+      xhr.ontimeout = () => resolve();
+      xhr.timeout = 8000;
+      xhr.send();
+    });
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
