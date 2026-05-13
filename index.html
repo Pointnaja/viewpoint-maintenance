@@ -981,18 +981,8 @@ async function submit() {
       timestamp: payload.timestamp,
     });
 
-    const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
-
-    // ส่งข้อมูลผ่าน XMLHttpRequest แบบ sync (หลีก LIFF fetch restriction)
-    await new Promise((resolve) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", webhookUrl, true);
-      xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
-      xhr.onerror = () => resolve();
-      xhr.ontimeout = () => resolve();
-      xhr.timeout = 8000;
-      xhr.send();
-    });
+    // ส่งผ่าน liff.sendMessages() → LINE Bot รับแล้ว forward ไป Apps Script
+    await liff.sendMessages([{ type: "text", text: "MT_DATA:" + params.toString() }]);
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
