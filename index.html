@@ -981,8 +981,17 @@ async function submit() {
       timestamp: payload.timestamp,
     });
 
-    // ส่งผ่าน liff.sendMessages() → LINE Bot รับแล้ว forward ไป Apps Script
-    await liff.sendMessages([{ type: "text", text: "MT_DATA:" + params.toString() }]);
+    // ส่งผ่าน hidden iframe → Apps Script doGet (HtmlService ไม่มี CORS)
+    const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
+    await new Promise((resolve) => {
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "display:none;width:1px;height:1px;";
+      iframe.src = webhookUrl;
+      iframe.onload = () => { setTimeout(() => { document.body.removeChild(iframe); resolve(); }, 500); };
+      iframe.onerror = () => { document.body.removeChild(iframe); resolve(); };
+      document.body.appendChild(iframe);
+      setTimeout(() => { try { document.body.removeChild(iframe); } catch(e){} resolve(); }, 8000);
+    });
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
