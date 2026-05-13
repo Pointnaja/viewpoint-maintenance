@@ -967,7 +967,7 @@ async function submit() {
     timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
   };
   try {
-    // ส่งข้อมูลผ่าน Image URL trick เพื่อเลี่ยง CORS
+    // ส่งข้อมูลผ่าน iframe trick — วิธีเดียวที่ผ่าน CORS ของ Apps Script ได้
     const params = new URLSearchParams({
       ticketId: payload.ticketId,
       department: payload.department,
@@ -981,14 +981,16 @@ async function submit() {
       lineName: payload.lineName || "",
       timestamp: payload.timestamp,
     });
-    
-    // ใช้ Image trick เพื่อเลี่ยง CORS (reliable กว่า no-cors fetch)
+
     const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
     await new Promise((resolve) => {
-      const img = new Image();
-      img.onload = img.onerror = () => resolve();
-      img.src = webhookUrl;
-      setTimeout(resolve, 5000); // timeout 5 วิ
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.onload = () => { document.body.removeChild(iframe); resolve(); };
+      iframe.onerror = () => { document.body.removeChild(iframe); resolve(); };
+      document.body.appendChild(iframe);
+      iframe.src = webhookUrl;
+      setTimeout(resolve, 6000); // timeout 6 วิ
     });
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
