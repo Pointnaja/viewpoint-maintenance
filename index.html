@@ -981,17 +981,17 @@ async function submit() {
       timestamp: payload.timestamp,
     });
 
-    // ส่งผ่าน hidden iframe → Apps Script doGet (HtmlService ไม่มี CORS)
-    const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
-    await new Promise((resolve) => {
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = "display:none;width:1px;height:1px;";
-      iframe.src = webhookUrl;
-      iframe.onload = () => { setTimeout(() => { document.body.removeChild(iframe); resolve(); }, 500); };
-      iframe.onerror = () => { document.body.removeChild(iframe); resolve(); };
-      document.body.appendChild(iframe);
-      setTimeout(() => { try { document.body.removeChild(iframe); } catch(e){} resolve(); }, 8000);
-    });
+    // ส่งผ่าน liff.sendMessages() → LINE Bot รับ → Apps Script
+    try {
+      await liff.sendMessages([{
+        type: "text",
+        text: "MT_DATA:" + params.toString()
+      }]);
+    } catch (sendErr) {
+      // fallback: ถ้า sendMessages ไม่ได้ ลอง fetch
+      fetch(CONFIG.WEBHOOK_URL + "?" + params.toString(), { method: "GET", mode: "no-cors" }).catch(() => {});
+      await new Promise(r => setTimeout(r, 2000));
+    }
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
