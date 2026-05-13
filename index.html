@@ -658,7 +658,7 @@ input::placeholder, textarea::placeholder { color: var(--border); }
 <script>
 const CONFIG = {
   LIFF_ID:     "2010069721-aq08g8I1",
-  WEBHOOK_URL: "YOUR_GOOGLE_APPS_SCRIPT_URL",
+  WEBHOOK_URL: "https://script.google.com/macros/s/AKfycbz_WfVVudX3a81gGbWvTaE8HWy9-e21qwyJrG3vGyvTFClcBVgF2dCOWAzOeulFFMg2/exec",
 };
 
 // ── i18n STRINGS ─────────────────────────────────────────────────────────────
@@ -967,8 +967,8 @@ async function submit() {
     timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
   };
   try {
-    // await fetch(CONFIG.WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-    await new Promise(r => setTimeout(r, 1500));
+    await fetch(CONFIG.WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+    // demo delay removed — using real webhook
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
