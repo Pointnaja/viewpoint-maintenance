@@ -982,10 +982,14 @@ async function submit() {
       timestamp: payload.timestamp,
     });
     
-    // ใช้ no-cors fetch
+    // ใช้ Image trick เพื่อเลี่ยง CORS (reliable กว่า no-cors fetch)
     const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
-    await fetch(webhookUrl, { method: "GET", mode: "no-cors" });
-    // demo delay removed — using real webhook
+    await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = img.onerror = () => resolve();
+      img.src = webhookUrl;
+      setTimeout(resolve, 5000); // timeout 5 วิ
+    });
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
