@@ -967,7 +967,6 @@ async function submit() {
     timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
   };
   try {
-    // ส่งข้อมูลผ่าน iframe trick — วิธีเดียวที่ผ่าน CORS ของ Apps Script ได้
     const params = new URLSearchParams({
       ticketId: payload.ticketId,
       department: payload.department,
@@ -983,15 +982,10 @@ async function submit() {
     });
 
     const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
-    await new Promise((resolve) => {
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.onload = () => { document.body.removeChild(iframe); resolve(); };
-      iframe.onerror = () => { document.body.removeChild(iframe); resolve(); };
-      document.body.appendChild(iframe);
-      iframe.src = webhookUrl;
-      setTimeout(resolve, 6000); // timeout 6 วิ
-    });
+
+    // fire-and-forget: ส่งแล้วไม่รอ response (หลีก CORS ของ LIFF)
+    fetch(webhookUrl, { method: "GET", mode: "no-cors" }).catch(() => {});
+    await new Promise(resolve => setTimeout(resolve, 1500));
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
