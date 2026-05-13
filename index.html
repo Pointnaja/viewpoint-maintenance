@@ -967,12 +967,24 @@ async function submit() {
     timestamp: new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
   };
   try {
-    await fetch(CONFIG.WEBHOOK_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload)
+    // ส่งข้อมูลผ่าน Image URL trick เพื่อเลี่ยง CORS
+    const params = new URLSearchParams({
+      ticketId: payload.ticketId,
+      department: payload.department,
+      location: payload.location,
+      category: payload.category,
+      description: payload.description,
+      priority: payload.priority,
+      reporter: payload.reporter,
+      contact: payload.contact || "",
+      lineUserId: payload.lineUserId || "",
+      lineName: payload.lineName || "",
+      timestamp: payload.timestamp,
     });
+    
+    // ใช้ no-cors fetch
+    const webhookUrl = CONFIG.WEBHOOK_URL + "?" + params.toString();
+    await fetch(webhookUrl, { method: "GET", mode: "no-cors" });
     // demo delay removed — using real webhook
     document.getElementById("loading").classList.remove("active");
     document.getElementById("ticket-box").textContent = ticketId;
