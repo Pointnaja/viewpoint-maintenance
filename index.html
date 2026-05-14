@@ -9,305 +9,1315 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --ocean:#0077B6; --sea:#00B4D8; --sky:#48CAE4; --foam:#90E0EF;
-  --mist:#CAF0F8; --sand:#F8F4E8; --white:#FFFFFF; --teal:#0096C7;
-  --green:#2DC653; --coral:#FF6B6B; --amber:#FFB347;
-  --text:#0D3B52; --muted:#5A8A9F; --border:#B8DDE8;
-  --surface:#F0F9FC; --urgent:#FF4444; --high:#FF8C00;
-  --medium:#00B4D8; --low:#2DC653; --r:16px; --r-sm:10px;
-  --dark-bg:#0a0e1a; --dark-surface:#111827; --dark-surface2:#1a2235;
-  --dark-border:#1e2d45; --accent:#00c6ff; --accent2:#0072ff;
-  --dark-text:#e2e8f0; --dark-muted:#64748b;
-}
-html, body { min-height:100%; background:var(--mist); color:var(--text); font-family:'Prompt',sans-serif; font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
 
-/* ── BOTTOM NAV ── */
+:root {
+  /* Core palette */
+  --ocean: #0077B6;
+  --sea: #00B4D8;
+  --sky: #48CAE4;
+  --deep: #023E8A;
+  --foam: #90E0EF;
+  --mist: #CAF0F8;
+  --sand: #F8F4E8;
+  --white: #FFFFFF;
+  --teal: #0096C7;
+  --green: #2DC653;
+  --coral: #FF6B6B;
+  --amber: #FFB347;
+  --text: #0D3B52;
+  --muted: #5A8A9F;
+  --border: #B8DDE8;
+  --surface: #F0F9FC;
+  --warm-white: #fafcff;
+  --urgent: #FF4444;
+  --high: #FF8C00;
+  --medium: #00B4D8;
+  --low: #2DC653;
+  --r: 20px;
+  --r-sm: 12px;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.18);
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-strong: rgba(255, 255, 255, 0.28);
+
+  /* Colored shadows */
+  --shadow-ocean: 0 8px 32px rgba(0, 119, 182, 0.18);
+  --shadow-ocean-sm: 0 2px 12px rgba(0, 119, 182, 0.12);
+  --shadow-card: 0 1px 3px rgba(0, 119, 182, 0.06), 0 8px 24px rgba(0, 119, 182, 0.10);
+
+  /* Transition */
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Dark theme */
+  --dark-bg: #0a0e1a;
+  --dark-surface: #111827;
+  --dark-surface2: #1a2235;
+  --dark-border: #1e2d45;
+  --accent: #00c6ff;
+  --accent2: #0072ff;
+  --dark-text: #e2e8f0;
+  --dark-muted: #64748b;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--mist);
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.35); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+@keyframes waveFloat { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(10px); } }
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+@keyframes dashMove {
+  to { stroke-dashoffset: -20; }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 180, 216, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 180, 216, 0); }
+}
+
+.field.has-error select,
+.field.has-error input,
+.field.has-error textarea {
+  animation: shake 0.35s ease;
+}
+
+/* ══════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════ */
 .bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-  background: white; border-top: 1px solid var(--border);
-  display: flex; height: 56px;
-  box-shadow: 0 -4px 20px rgba(0,119,182,.1);
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(184, 221, 232, 0.5);
+  display: flex;
+  height: 60px;
+  box-shadow: 0 -4px 24px rgba(0, 119, 182, 0.10);
 }
 .nav-item {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 2px; cursor: pointer;
-  border: none; background: none; font-family: 'Prompt', sans-serif;
-  color: var(--muted); font-size: 10px; font-weight: 500;
-  transition: all 0.2s; padding: 6px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: 'Prompt', sans-serif;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  transition: var(--transition);
+  padding: 6px 0;
+  position: relative;
 }
 .nav-item.active { color: var(--ocean); }
-.nav-item .nav-icon { font-size: 20px; transition: transform 0.2s; }
-.nav-item.active .nav-icon { transform: scale(1.1); }
+.nav-item .nav-icon {
+  font-size: 22px;
+  transition: var(--transition);
+  line-height: 1;
+}
+.nav-item.active .nav-icon { transform: scale(1.12); }
+.nav-item .nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+.nav-item.active .nav-label { font-weight: 700; }
+.nav-pill {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 32px;
+  background: rgba(0, 119, 182, 0.12);
+  border-radius: 12px;
+  opacity: 0;
+  transition: var(--transition);
+}
+.nav-item.active .nav-pill { opacity: 1; }
 .nav-indicator {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 32px; height: 3px; background: var(--ocean);
-  border-radius: 3px 3px 0 0; opacity: 0; transition: opacity 0.2s;
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 3px;
+  background: var(--ocean);
+  border-radius: 3px 3px 0 0;
+  opacity: 0;
+  transition: var(--transition);
 }
 .nav-item.active .nav-indicator { opacity: 1; }
 
-/* ── SCREENS ── */
-.screen { display: none; min-height: 100vh; padding-bottom: 64px; }
+/* ══════════════════════════════════
+   SCREENS
+══════════════════════════════════ */
+.screen { display: none; min-height: 100vh; padding-bottom: 68px; }
 .screen.active { display: block; }
 
-/* ════════════════════════════════
-   SCREEN 1: FORM (แจ้งซ่อม)
-   ════════════════════════════════ */
+/* ══════════════════════════════════
+   SCREEN 1: FORM
+══════════════════════════════════ */
 .wave-bg {
-  position: fixed; top: 0; left: 0; right: 0;
-  height: 220px; z-index: 0; overflow: hidden;
-  background: linear-gradient(160deg, var(--ocean) 0%, var(--sea) 50%, var(--sky) 100%);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 240px; z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--deep) 0%, var(--ocean) 40%, var(--sea) 75%, var(--sky) 100%);
 }
-.wave-bg::after {
-  content: ''; position: absolute; bottom: -2px; left: -10%; width: 120%; height: 60px;
-  background: var(--mist); border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+.wave-svg {
+  position: absolute;
+  bottom: -1px; left: 0; width: 100%;
 }
 #screen-form { background: var(--mist); }
-.app { position:relative; z-index:1; max-width:460px; margin:0 auto; padding:0 0 10px; display:flex; flex-direction:column; }
+.app {
+  position: relative; z-index: 1;
+  max-width: 460px; margin: 0 auto;
+  padding: 0 0 10px;
+  display: flex; flex-direction: column;
+}
 
 /* HEADER */
-.header { padding:52px 20px 20px; color:white; }
-.header-resort { font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; opacity:.8; margin-bottom:4px; font-family:'IBM Plex Mono',monospace; }
-.header-title { font-size:26px; font-weight:700; line-height:1.2; margin-bottom:2px; }
-.header-sub { font-size:13px; opacity:.75; }
-.user-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.2); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.3); border-radius:30px; padding:6px 14px 6px 6px; margin-top:14px; }
-.user-avatar { width:26px; height:26px; border-radius:50%; background:white; color:var(--ocean); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
-.user-name { font-size:13px; color:white; font-weight:500; }
-
-/* PROGRESS */
-.progress-wrap { background:white; margin:0 16px; border-radius:20px; padding:14px 16px; box-shadow:0 4px 20px rgba(0,119,182,.12); margin-bottom:16px; }
-.steps-row { display:flex; align-items:center; gap:0; margin-bottom:10px; }
-.step { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
-.step-num { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; border:2px solid var(--border); color:var(--muted); background:white; transition:all .3s; }
-.step.active .step-num { background:linear-gradient(135deg,var(--ocean),var(--sea)); border-color:transparent; color:white; box-shadow:0 4px 12px rgba(0,119,182,.35); }
-.step.done .step-num { background:var(--green); border-color:transparent; color:white; }
-.step-lbl { font-size:10px; color:var(--muted); font-weight:500; text-align:center; }
-.step.active .step-lbl { color:var(--ocean); font-weight:600; }
-.step-line { flex:.4; height:2px; background:var(--border); margin-bottom:18px; border-radius:2px; transition:background .3s; }
-.step-line.done { background:var(--green); }
-.progress-track { height:5px; background:var(--mist); border-radius:10px; overflow:hidden; }
-.progress-fill { height:100%; background:linear-gradient(90deg,var(--ocean),var(--sky)); border-radius:10px; transition:width .5s cubic-bezier(.4,0,.2,1); }
-
-/* CARD */
-.card { background:white; border-radius:var(--r); margin:0 16px 14px; padding:20px; box-shadow:0 2px 16px rgba(0,119,182,.08); }
-.section-title { font-size:12px; font-weight:600; color:var(--sea); letter-spacing:1.5px; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-.section-title::after { content:''; flex:1; height:1px; background:var(--mist); }
-
-/* FIELDS */
-.field { margin-bottom:14px; }
-.field:last-child { margin-bottom:0; }
-.field label { display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:7px; }
-.req { color:var(--coral); margin-left:2px; }
-select, input, textarea { width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-family:'Prompt',sans-serif; font-size:14px; font-weight:400; padding:11px 14px; outline:none; transition:all .2s; appearance:none; -webkit-appearance:none; }
-select:focus, input:focus, textarea:focus { border-color:var(--sea); background:white; box-shadow:0 0 0 3px rgba(0,180,216,.12); }
-select { cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A8A9F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
-textarea { resize:none; min-height:88px; line-height:1.6; }
-input::placeholder, textarea::placeholder { color:var(--border); }
-.err { font-size:12px; color:var(--coral); margin-top:5px; display:none; }
-.field.has-error select,.field.has-error input,.field.has-error textarea { border-color:var(--coral); background:#fff5f5; }
-.field.has-error .err { display:block; }
-
-/* PRIORITY */
-.priority-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.p-btn { background:var(--surface); border:2px solid var(--border); border-radius:var(--r-sm); padding:12px 10px; cursor:pointer; transition:all .18s; display:flex; align-items:center; gap:10px; color:var(--text); font-family:'Prompt',sans-serif; font-size:14px; font-weight:600; text-align:left; }
-.p-icon { font-size:22px; flex-shrink:0; }
-.p-name { font-size:13px; font-weight:600; }
-.p-desc { font-size:11px; color:var(--muted); font-weight:400; line-height:1.3; margin-top:1px; }
-.p-btn[data-p="urgent"].sel { border-color:var(--urgent); background:#fff0f0; }
-.p-btn[data-p="high"].sel   { border-color:var(--high);   background:#fff7ed; }
-.p-btn[data-p="medium"].sel { border-color:var(--medium); background:#f0fbff; }
-.p-btn[data-p="low"].sel    { border-color:var(--low);    background:#f0fff4; }
-.p-btn[data-p="urgent"].sel .p-name { color:var(--urgent); }
-.p-btn[data-p="high"].sel   .p-name { color:var(--high); }
-.p-btn[data-p="medium"].sel .p-name { color:var(--medium); }
-.p-btn[data-p="low"].sel    .p-name { color:var(--low); }
-
-/* PHOTO */
-.photo-zone { border:2px dashed var(--border); border-radius:var(--r-sm); padding:18px; text-align:center; cursor:pointer; transition:border-color .2s; position:relative; background:var(--surface); }
-.photo-zone:hover { border-color:var(--sea); }
-.photo-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-.photo-icon-big { font-size:30px; margin-bottom:6px; }
-.photo-zone p { font-size:13px; color:var(--muted); }
-.photo-zone strong { color:var(--ocean); }
-.photo-thumbs { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-.photo-thumb { width:68px; height:68px; border-radius:8px; object-fit:cover; border:2px solid var(--border); }
-
-/* REVIEW */
-.review-block { background:var(--surface); border-radius:var(--r-sm); overflow:hidden; margin-bottom:12px; border:1px solid var(--border); }
-.review-head { background:linear-gradient(90deg,var(--ocean),var(--sea)); padding:10px 14px; display:flex; align-items:center; gap:8px; }
-.review-head span { color:white; font-size:12px; font-weight:600; letter-spacing:.5px; }
-.review-body { padding:12px 14px; }
-.r-row { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px solid var(--mist); gap:12px; }
-.r-row:last-child { border-bottom:none; padding-bottom:0; }
-.r-key { font-size:12px; color:var(--muted); flex-shrink:0; }
-.r-val { font-size:13px; font-weight:600; text-align:right; color:var(--text); }
-
-/* BADGE */
-.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
-.badge-urgent { background:#ffe0e0; color:var(--urgent); }
-.badge-high   { background:#fff0d6; color:var(--high); }
-.badge-medium { background:#e0f7ff; color:var(--medium); }
-.badge-low    { background:#e0ffe8; color:var(--low); }
-
-/* FORM BUTTONS */
-.form-nav { padding:4px 16px 0; display:flex; gap:10px; }
-.btn { flex:1; padding:14px; border-radius:var(--r); border:none; font-family:'Prompt',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:6px; }
-.btn-back { background:white; color:var(--muted); border:1.5px solid var(--border); flex:.55; }
-.btn-next { background:linear-gradient(135deg,var(--ocean),var(--sea)); color:white; box-shadow:0 6px 20px rgba(0,119,182,.3); }
-.btn-next:active { transform:scale(.98); }
-.btn-next:disabled { opacity:.35; pointer-events:none; }
-
-/* PAGE ANIM */
-.page { display:none; animation:slideUp .3s ease; }
-.page.active { display:block; }
-@keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-
-/* SUCCESS */
-.success { display:none; flex-direction:column; align-items:center; padding:40px 20px; text-align:center; min-height:60vh; justify-content:center; }
-.success.active { display:flex; }
-.success-wave { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--ocean),var(--sky)); display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:20px; box-shadow:0 8px 30px rgba(0,119,182,.3); animation:popIn .5s cubic-bezier(.34,1.56,.64,1); }
-@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
-.ticket-box { background:white; border:2px solid var(--sea); border-radius:var(--r-sm); padding:10px 24px; font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700; color:var(--ocean); margin:12px 0; letter-spacing:2px; }
-.line-notify { background:linear-gradient(135deg,rgba(0,180,216,.08),rgba(0,119,182,.08)); border:1px solid rgba(0,180,216,.3); border-radius:var(--r-sm); padding:12px 18px; font-size:13px; color:var(--ocean); margin-top:14px; max-width:300px; line-height:1.6; }
-.btn-close { margin-top:24px; background:white; border:1.5px solid var(--border); border-radius:var(--r); padding:12px 32px; color:var(--text); font-family:'Prompt',sans-serif; font-size:14px; font-weight:600; cursor:pointer; }
-
-/* LOADING */
-.loading { display:none; position:fixed; inset:0; background:rgba(202,240,248,.85); backdrop-filter:blur(6px); z-index:300; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
-.loading.active { display:flex; }
-.spinner { width:44px; height:44px; border:3px solid var(--foam); border-top-color:var(--ocean); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.loading p { font-size:14px; color:var(--ocean); font-weight:500; }
+.header { padding: 52px 20px 24px; color: white; }
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo-ring {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.3), 0 8px 24px rgba(0,0,0,0.25), 0 0 20px rgba(72,202,228,0.4);
+  flex-shrink: 0;
+}
+.logo-ring img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #111;
+  display: block;
+}
+.header-resort {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: .75;
+  margin-bottom: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.header-title { font-size: 24px; font-weight: 700; line-height: 1.2; margin-bottom: 2px; }
+.header-sub { font-size: 13px; opacity: .72; }
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  border-radius: 30px;
+  padding: 6px 14px 6px 6px;
+  margin-top: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: white;
+  color: var(--ocean);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.user-name { font-size: 13px; color: white; font-weight: 600; }
 
 /* LANG */
-.lang-toggle { display:flex; gap:4px; background:rgba(255,255,255,.15); border-radius:20px; padding:3px; backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.25); }
-.lang-btn { padding:4px 10px; border-radius:16px; border:none; background:transparent; color:rgba(255,255,255,.7); font-family:'Prompt',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:4px; }
-.lang-btn.lang-active { background:white; color:var(--ocean); box-shadow:0 2px 8px rgba(0,0,0,.15); }
-.notice { background:linear-gradient(90deg,rgba(0,180,216,.1),rgba(72,202,228,.1)); border-left:3px solid var(--sea); margin:0 16px 14px; border-radius:0 var(--r-sm) var(--r-sm) 0; padding:10px 14px; font-size:12px; color:var(--teal); }
+.lang-toggle {
+  display: flex; gap: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 3px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.22);
+}
+.lang-btn {
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 4px;
+}
+.lang-btn.lang-active {
+  background: white;
+  color: var(--ocean);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
 
-/* ════════════════════════════════
+/* PROGRESS */
+.progress-wrap {
+  background: white;
+  margin: 0 16px 16px;
+  border-radius: var(--r);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+}
+.steps-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  border: 2px solid var(--border);
+  color: var(--muted);
+  background: white;
+  transition: var(--transition);
+  position: relative;
+}
+.step.active .step-num {
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0,119,182,0.40), 0 0 0 4px rgba(0,180,216,0.12);
+}
+.step.done .step-num {
+  background: var(--green);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 3px 10px rgba(45,198,83,0.35);
+}
+.step-lbl {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+.step.active .step-lbl { color: var(--ocean); font-weight: 700; }
+.step.done .step-lbl { color: var(--green); }
+.step-line {
+  flex: 0.4;
+  height: 3px;
+  background: var(--border);
+  margin-bottom: 20px;
+  border-radius: 3px;
+  transition: background 0.4s ease;
+}
+.step-line.done { background: var(--green); }
+.progress-track {
+  height: 6px;
+  background: var(--mist);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ocean), var(--sky));
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 20px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 10px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: var(--r);
+  margin: 0 16px 14px;
+  padding: 22px;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+}
+
+/* SECTION TITLES */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0,119,182,0.08), rgba(0,180,216,0.08));
+  color: var(--ocean);
+  border: 1px solid rgba(0,180,216,0.2);
+}
+/* keep the ::after line if the JS uses childNodes[0] */
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.section-title-wrap::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* FIELDS */
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 7px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.req { color: var(--coral); margin-left: 2px; }
+
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 12px; height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A8A9F' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}
+
+select, input, textarea {
+  width: 100%;
+  background: var(--warm-white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+select {
+  cursor: pointer;
+  padding-right: 36px;
+}
+select:focus, input:focus, textarea:focus {
+  border-color: var(--sea);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.14), 0 2px 8px rgba(0,119,182,0.08);
+}
+textarea {
+  resize: none;
+  min-height: 92px;
+  line-height: 1.6;
+}
+input::placeholder, textarea::placeholder { color: #b0cdd8; }
+.err {
+  font-size: 12px;
+  color: var(--coral);
+  margin-top: 6px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+.err::before { content: '⚠'; font-size: 11px; }
+.field.has-error select,
+.field.has-error input,
+.field.has-error textarea {
+  border-color: var(--coral);
+  background: #fff5f5;
+  box-shadow: 0 0 0 3px rgba(255,107,107,0.12);
+}
+.field.has-error .err { display: flex; }
+
+/* PRIORITY GRID */
+.priority-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.p-btn {
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  min-height: 82px;
+  position: relative;
+  overflow: hidden;
+}
+.p-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 12px 0 0 12px;
+  transition: var(--transition);
+}
+.p-btn[data-p="urgent"]::before { background: var(--urgent); }
+.p-btn[data-p="high"]::before   { background: var(--high); }
+.p-btn[data-p="medium"]::before { background: var(--medium); }
+.p-btn[data-p="low"]::before    { background: var(--low); }
+
+.p-icon { font-size: 28px; flex-shrink: 0; transition: var(--transition); }
+.p-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.p-desc { font-size: 11px; color: var(--muted); font-weight: 400; line-height: 1.35; margin-top: 2px; }
+
+.p-btn[data-p="urgent"].sel {
+  border-color: var(--urgent);
+  background: #fff0f0;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(255,68,68,0.18);
+}
+.p-btn[data-p="high"].sel {
+  border-color: var(--high);
+  background: #fff7ed;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(255,140,0,0.18);
+}
+.p-btn[data-p="medium"].sel {
+  border-color: var(--medium);
+  background: #f0fbff;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0,180,216,0.18);
+}
+.p-btn[data-p="low"].sel {
+  border-color: var(--low);
+  background: #f0fff4;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(45,198,83,0.18);
+}
+.p-btn[data-p="urgent"].sel .p-name { color: var(--urgent); }
+.p-btn[data-p="high"].sel   .p-name { color: var(--high); }
+.p-btn[data-p="medium"].sel .p-name { color: var(--medium); }
+.p-btn[data-p="low"].sel    .p-name { color: var(--low); }
+.p-btn[data-p="urgent"].sel .p-icon,
+.p-btn[data-p="high"].sel .p-icon,
+.p-btn[data-p="medium"].sel .p-icon,
+.p-btn[data-p="low"].sel .p-icon { transform: scale(1.15); }
+
+/* PHOTO ZONE */
+.photo-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--r-sm);
+  padding: 22px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  background: var(--warm-white);
+}
+.photo-zone:hover {
+  border-color: var(--sea);
+  background: rgba(0,180,216,0.04);
+  box-shadow: 0 4px 16px rgba(0,180,216,0.08);
+}
+.photo-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-icon-big { font-size: 32px; margin-bottom: 8px; }
+.photo-zone p { font-size: 13px; color: var(--muted); }
+.photo-zone strong { color: var(--ocean); font-weight: 700; }
+.photo-thumbs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.photo-thumb {
+  width: 80px; height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,119,182,0.10);
+  transition: var(--transition);
+}
+.photo-thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,119,182,0.18); }
+
+/* NOTICE */
+.notice {
+  background: linear-gradient(90deg, rgba(0,180,216,0.1), rgba(72,202,228,0.05));
+  border-left: 3px solid var(--sea);
+  margin: 0 16px 14px;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--teal);
+  font-weight: 500;
+}
+
+/* REVIEW */
+.review-block {
+  background: var(--warm-white);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,119,182,0.06);
+}
+.review-head {
+  background: linear-gradient(90deg, var(--ocean), var(--sea));
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-head span {
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.review-body { padding: 12px 16px; }
+.r-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--mist);
+  gap: 12px;
+}
+.r-row:last-child { border-bottom: none; padding-bottom: 0; }
+.r-key {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.r-val {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text);
+}
+
+/* BADGE */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-urgent { background: #ffe0e0; color: var(--urgent); }
+.badge-high   { background: #fff0d6; color: var(--high); }
+.badge-medium { background: #e0f7ff; color: var(--medium); }
+.badge-low    { background: #e0ffe8; color: var(--low); }
+
+/* FORM BUTTONS */
+.form-nav { padding: 4px 16px 0; display: flex; gap: 10px; }
+.btn {
+  flex: 1;
+  padding: 15px;
+  border-radius: var(--r);
+  border: none;
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-back {
+  background: white;
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+  flex: 0.55;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.btn-back:hover { border-color: var(--sea); color: var(--ocean); }
+.btn-next {
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  color: white;
+  box-shadow: 0 6px 24px rgba(0,119,182,.35);
+}
+.btn-next:hover { box-shadow: 0 8px 28px rgba(0,119,182,.45); transform: translateY(-1px); }
+.btn-next:active { transform: scale(0.98); box-shadow: 0 4px 16px rgba(0,119,182,.3); }
+.btn-next:disabled { opacity: .35; pointer-events: none; box-shadow: none; }
+
+/* PAGE ANIM */
+.page { display: none; animation: slideUp 0.3s ease; }
+.page.active { display: block; }
+
+/* SUCCESS */
+.success {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  text-align: center;
+  min-height: 60vh;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.success.active { display: flex; }
+.success-confetti {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 2.5s ease-in forwards;
+}
+.success-wave {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ocean), var(--sky));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px;
+  margin-bottom: 20px;
+  box-shadow: 0 12px 40px rgba(0,119,182,.35), 0 0 0 8px rgba(0,180,216,0.12), 0 0 0 16px rgba(0,180,216,0.06);
+  animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ticket-box {
+  background: white;
+  border-radius: var(--r-sm);
+  padding: 12px 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ocean);
+  margin: 14px 0 4px;
+  letter-spacing: 3px;
+  position: relative;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 0 0 0 2px var(--sea), 0 8px 24px rgba(0,119,182,0.16);
+}
+.line-notify {
+  background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(0,119,182,0.08));
+  border: 1px solid rgba(0,180,216,0.28);
+  border-radius: var(--r-sm);
+  padding: 14px 20px;
+  font-size: 13px;
+  color: var(--ocean);
+  margin-top: 16px;
+  max-width: 310px;
+  line-height: 1.7;
+}
+.btn-close {
+  margin-top: 24px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 13px 36px;
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.btn-close:hover { border-color: var(--sea); color: var(--ocean); }
+
+/* LOADING */
+.loading {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(202,240,248,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 300;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.loading.active { display: flex; }
+.loading-card {
+  background: white;
+  border-radius: 24px;
+  padding: 36px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-ocean);
+}
+.loading-logo { font-size: 32px; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--mist);
+  border-top-color: var(--ocean);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading p {
+  font-size: 14px;
+  color: var(--ocean);
+  font-weight: 600;
+}
+.loading-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+/* ══════════════════════════════════
    SCREEN 2: STATUS UPDATE
-   ════════════════════════════════ */
+══════════════════════════════════ */
 #screen-status { background: var(--mist); }
-.status-header { background:linear-gradient(135deg,var(--ocean),var(--sea)); padding:52px 20px 24px; color:white; max-width:460px; margin:0 auto; }
-.status-header h1 { font-size:22px; font-weight:700; }
-.status-header p { font-size:13px; opacity:.8; margin-top:4px; }
-.status-body { max-width:460px; margin:0 auto; padding:16px; }
-.status-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-.status-btn { border:2px solid var(--border); border-radius:12px; padding:14px 10px; text-align:center; cursor:pointer; transition:all .2s; background:white; font-size:13px; color:var(--text); font-family:'Prompt',sans-serif; box-shadow:0 2px 8px rgba(0,119,182,.06); }
-.status-btn .s-emoji { font-size:24px; display:block; margin-bottom:6px; }
-.status-btn.selected { border-color:var(--ocean); background:var(--surface); color:var(--ocean); font-weight:600; box-shadow:0 4px 16px rgba(0,119,182,.2); }
-.status-btn:active { transform:scale(.97); }
-.status-note { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; font-size:14px; font-family:'Prompt',sans-serif; resize:none; height:90px; outline:none; background:white; }
-.status-note:focus { border-color:var(--sea); box-shadow:0 0 0 3px rgba(0,180,216,.12); }
-.btn-status-submit { width:100%; background:linear-gradient(135deg,var(--ocean),var(--sea)); color:white; border:none; border-radius:14px; padding:15px; font-size:16px; font-weight:700; cursor:pointer; font-family:'Prompt',sans-serif; box-shadow:0 6px 20px rgba(0,119,182,.3); transition:opacity .2s; margin-top:8px; }
-.btn-status-submit:disabled { opacity:.4; cursor:not-allowed; }
-.status-user-card { background:white; border-radius:14px; padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,119,182,.08); border:1px solid var(--border); }
-.status-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--ocean),var(--sea)); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; flex-shrink:0; }
-.status-ticket-info { font-size:12px; color:var(--muted); margin-top:2px; font-family:'IBM Plex Mono',monospace; }
-.status-success { display:none; flex-direction:column; align-items:center; padding:60px 20px; text-align:center; }
-.status-success.active { display:flex; }
+.status-header {
+  background: linear-gradient(160deg, var(--deep) 0%, var(--ocean) 45%, var(--sea) 100%);
+  padding: 52px 20px 28px;
+  color: white;
+  max-width: 460px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+.status-header h1 { font-size: 22px; font-weight: 700; }
+.status-header p { font-size: 13px; opacity: .75; margin-top: 4px; }
+.status-body { max-width: 460px; margin: 0 auto; padding: 16px; }
 
-/* ════════════════════════════════
+/* Status user card */
+.status-user-card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+}
+.status-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,119,182,0.25);
+}
+.status-ticket-info {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Status grid — 2x2 + 1 full */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.status-btn {
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Prompt', sans-serif;
+  box-shadow: 0 2px 8px rgba(0,119,182,0.06);
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.status-btn .s-emoji {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.status-btn .s-desc {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+.status-btn:active { transform: scale(0.97); }
+.status-btn.selected {
+  border-color: var(--ocean);
+  background: linear-gradient(135deg, rgba(0,119,182,0.06), rgba(0,180,216,0.06));
+  color: var(--ocean);
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(0,180,216,0.15), 0 6px 20px rgba(0,119,182,.18);
+  transform: scale(1.02);
+}
+.status-btn[data-st="done"] {
+  grid-column: span 2;
+  min-height: 72px;
+  flex-direction: row;
+  gap: 12px;
+}
+.status-btn[data-st="done"] .s-emoji { font-size: 24px; margin-bottom: 0; }
+.status-btn[data-st="done"].selected {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(45,198,83,0.06), rgba(45,198,83,0.1));
+  color: var(--green);
+  box-shadow: 0 0 0 3px rgba(45,198,83,0.2), 0 6px 20px rgba(45,198,83,0.18);
+}
+
+/* Status note */
+.status-note {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: 'Prompt', sans-serif;
+  resize: none;
+  height: 96px;
+  outline: none;
+  background: var(--warm-white);
+  transition: var(--transition);
+}
+.status-note:focus {
+  border-color: var(--sea);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0,180,216,0.14);
+}
+.note-counter {
+  text-align: right;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.btn-status-submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  box-shadow: 0 6px 24px rgba(0,119,182,.35);
+  transition: var(--transition);
+  margin-top: 8px;
+}
+.btn-status-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(0,119,182,.42);
+}
+.btn-status-submit:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+.status-success {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+.status-success.active { display: flex; }
+
+/* ══════════════════════════════════
    SCREEN 3: DASHBOARD
-   ════════════════════════════════ */
-#screen-dashboard { background:var(--dark-bg); color:var(--dark-text); }
-.db-topbar { background:var(--dark-surface); border-bottom:1px solid var(--dark-border); padding:0 16px; height:52px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-.db-logo { display:flex; align-items:center; gap:8px; }
-.db-logo-icon { width:26px; height:26px; background:linear-gradient(135deg,var(--accent2),var(--accent)); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; }
-.db-logo-text { font-size:14px; font-weight:600; }
-.db-logo-sub { font-size:10px; color:var(--dark-muted); }
-.db-refresh { background:var(--dark-surface2); border:1px solid var(--dark-border); color:var(--dark-text); padding:5px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-family:'Prompt',sans-serif; transition:all .2s; }
-.db-refresh:hover { border-color:var(--accent); color:var(--accent); }
-.db-last { font-size:10px; color:var(--dark-muted); font-family:'IBM Plex Mono',monospace; }
-.db-main { padding:14px 16px; max-width:800px; margin:0 auto; }
+══════════════════════════════════ */
+#screen-dashboard { background: var(--dark-bg); color: var(--dark-text); }
+.db-topbar {
+  background: var(--dark-surface);
+  border-bottom: 1px solid var(--dark-border);
+  padding: 0 16px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.db-logo { display: flex; align-items: center; gap: 10px; }
+.db-logo-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 3px 10px rgba(0,198,255,0.35);
+}
+.db-logo-text { font-size: 14px; font-weight: 700; }
+.db-logo-sub { font-size: 10px; color: var(--dark-muted); }
+.db-refresh {
+  background: var(--dark-surface2);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text);
+  padding: 6px 13px;
+  border-radius: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  transition: var(--transition);
+}
+.db-refresh:hover { border-color: var(--accent); color: var(--accent); }
+.db-last {
+  font-size: 10px;
+  color: var(--dark-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.db-main { padding: 14px 16px; max-width: 800px; margin: 0 auto; }
 
 /* STAT CARDS */
-.db-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:14px; }
-@media(max-width:500px) { .db-stats { grid-template-columns:repeat(3,1fr); } }
-.db-stat { background:var(--dark-surface); border:1px solid var(--dark-border); border-radius:10px; padding:12px 10px; position:relative; overflow:hidden; }
-.db-stat::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
-.db-stat.s-total::before { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
-.db-stat.s-urgent::before { background:#ef4444; }
-.db-stat.s-pending::before { background:#eab308; }
-.db-stat.s-inprogress::before { background:#3b82f6; }
-.db-stat.s-done::before { background:#22c55e; }
-.db-stat-num { font-size:24px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
-.db-stat-lbl { font-size:9px; color:var(--dark-muted); margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
-.db-stat-em { position:absolute; right:8px; top:8px; font-size:16px; opacity:.35; }
+.db-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+@media (max-width: 500px) { .db-stats { grid-template-columns: repeat(3, 1fr); } }
 
-/* DB PANEL */
-.db-panel { background:var(--dark-surface); border:1px solid var(--dark-border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
-.db-panel-hdr { padding:12px 14px; border-bottom:1px solid var(--dark-border); display:flex; align-items:center; justify-content:space-between; }
-.db-panel-title { font-size:12px; font-weight:600; }
-.db-panel-count { font-size:10px; color:var(--dark-muted); }
-.db-panel-body { padding:14px; }
-.db-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-@media(max-width:600px) { .db-grid2 { grid-template-columns:1fr; } }
+.db-stat {
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 12px;
+  padding: 14px 10px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.db-stat:hover { transform: translateY(-2px); }
+.db-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.db-stat.s-total::before    { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+.db-stat.s-urgent::before   { background: #ef4444; }
+.db-stat.s-pending::before  { background: #eab308; }
+.db-stat.s-inprogress::before { background: #3b82f6; }
+.db-stat.s-done::before     { background: #22c55e; }
 
-/* URGENT */
-.db-urgent-item { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--dark-border); }
-.db-urgent-item:last-child { border-bottom:none; }
-.db-urgent-dot { width:7px; height:7px; border-radius:50%; background:#ef4444; margin-top:5px; flex-shrink:0; animation:pulse 1.5s infinite; }
-.db-urgent-dot.high { background:#f97316; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
-.db-urgent-id { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--accent); }
-.db-urgent-loc { font-size:12px; font-weight:500; margin-top:1px; }
-.db-urgent-desc { font-size:11px; color:var(--dark-muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+/* Sparkline area (CSS only) */
+.db-stat::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 28px;
+  opacity: 0.07;
+  border-radius: 0 0 12px 12px;
+}
+.db-stat.s-total::after    { background: linear-gradient(to top, var(--accent), transparent); }
+.db-stat.s-urgent::after   { background: linear-gradient(to top, #ef4444, transparent); }
+.db-stat.s-pending::after  { background: linear-gradient(to top, #eab308, transparent); }
+.db-stat.s-inprogress::after { background: linear-gradient(to top, #3b82f6, transparent); }
+.db-stat.s-done::after     { background: linear-gradient(to top, #22c55e, transparent); }
 
-/* CHART */
-.db-chart-wrap { position:relative; height:180px; }
+.db-stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.db-stat-lbl {
+  font-size: 9px;
+  color: var(--dark-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.db-stat-em {
+  position: absolute;
+  right: 8px; top: 10px;
+  font-size: 16px;
+  opacity: 0.3;
+}
 
-/* FILTER */
-.db-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-.db-filter { background:var(--dark-surface2); border:1px solid var(--dark-border); color:var(--dark-muted); padding:4px 10px; border-radius:16px; font-size:11px; cursor:pointer; font-family:'Prompt',sans-serif; transition:all .15s; }
-.db-filter.active { background:var(--accent2); border-color:var(--accent2); color:white; }
+/* DB PANELS */
+.db-panel {
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+.db-panel-hdr {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--dark-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.db-panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
+.db-panel-count {
+  font-size: 10px;
+  color: var(--dark-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.db-panel-body { padding: 14px; }
+.db-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) { .db-grid2 { grid-template-columns: 1fr; } }
+
+/* URGENT ITEMS */
+.db-urgent-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dark-border);
+}
+.db-urgent-item:last-child { border-bottom: none; }
+.db-urgent-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  margin-top: 5px;
+  flex-shrink: 0;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 6px rgba(239,68,68,0.5);
+}
+.db-urgent-dot.high { background: #f97316; box-shadow: 0 0 6px rgba(249,115,22,0.5); }
+.db-urgent-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+}
+.db-urgent-loc { font-size: 12px; font-weight: 600; margin-top: 1px; }
+.db-urgent-desc {
+  font-size: 11px;
+  color: var(--dark-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+/* CHARTS */
+.db-chart-wrap { position: relative; height: 190px; }
+
+/* FILTERS */
+.db-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.db-filter {
+  background: var(--dark-surface2);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-muted);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.db-filter:hover { border-color: var(--accent); color: var(--dark-text); }
+.db-filter.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0,114,255,0.35);
+}
 
 /* TABLE */
-.db-table-wrap { overflow-x:auto; max-height:360px; overflow-y:auto; }
-.db-table-wrap::-webkit-scrollbar { width:3px; height:3px; }
-.db-table-wrap::-webkit-scrollbar-track { background:var(--dark-surface); }
-.db-table-wrap::-webkit-scrollbar-thumb { background:var(--dark-border); border-radius:2px; }
-.db-table { width:100%; border-collapse:collapse; font-size:11px; }
-.db-table th { text-align:left; padding:7px 8px; color:var(--dark-muted); font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--dark-border); white-space:nowrap; }
-.db-table td { padding:9px 8px; border-bottom:1px solid var(--dark-border); vertical-align:middle; }
-.db-table tr:last-child td { border-bottom:none; }
-.db-table tr:hover td { background:var(--dark-surface2); }
-.db-ticket-id { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--accent); }
-.db-badge { display:inline-flex; align-items:center; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:500; }
-.db-badge-urgent { background:rgba(239,68,68,.15); color:#f87171; }
-.db-badge-high { background:rgba(249,115,22,.15); color:#fb923c; }
-.db-badge-medium { background:rgba(59,130,246,.15); color:#60a5fa; }
-.db-badge-low { background:rgba(34,197,94,.15); color:#4ade80; }
-.db-badge-pending { background:rgba(234,179,8,.15); color:#fbbf24; }
-.db-badge-inprogress { background:rgba(59,130,246,.15); color:#60a5fa; }
-.db-badge-done { background:rgba(34,197,94,.15); color:#4ade80; }
-.db-badge-waiting { background:rgba(249,115,22,.15); color:#fb923c; }
-.db-badge-roomclose { background:rgba(168,85,247,.15); color:#c084fc; }
-.db-empty { text-align:center; color:var(--dark-muted); padding:24px; font-size:12px; }
+.db-table-wrap {
+  overflow-x: auto;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.db-table-wrap::-webkit-scrollbar { width: 3px; height: 3px; }
+.db-table-wrap::-webkit-scrollbar-track { background: var(--dark-surface); }
+.db-table-wrap::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
+.db-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.db-table th {
+  text-align: left;
+  padding: 8px 10px;
+  color: var(--dark-muted);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--dark-border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--dark-surface);
+}
+.db-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(30,45,69,0.5);
+  vertical-align: middle;
+}
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tbody tr:nth-child(even) td { background: rgba(17,24,39,0.4); }
+.db-table tr:hover td {
+  background: var(--dark-surface2);
+  transition: background 0.15s;
+}
+.db-ticket-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.db-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.db-badge-urgent    { background: rgba(239,68,68,.15); color: #f87171; }
+.db-badge-high      { background: rgba(249,115,22,.15); color: #fb923c; }
+.db-badge-medium    { background: rgba(59,130,246,.15); color: #60a5fa; }
+.db-badge-low       { background: rgba(34,197,94,.15); color: #4ade80; }
+.db-badge-pending   { background: rgba(234,179,8,.15); color: #fbbf24; }
+.db-badge-inprogress { background: rgba(59,130,246,.15); color: #60a5fa; }
+.db-badge-done      { background: rgba(34,197,94,.15); color: #4ade80; }
+.db-badge-waiting   { background: rgba(249,115,22,.15); color: #fb923c; }
+.db-badge-roomclose { background: rgba(168,85,247,.15); color: #c084fc; }
+.db-empty {
+  text-align: center;
+  color: var(--dark-muted);
+  padding: 28px;
+  font-size: 12px;
+}
 
 /* DB LOADING */
-.db-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; color:var(--dark-muted); }
-.db-spinner { width:32px; height:32px; border:3px solid var(--dark-border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+.db-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--dark-muted);
+}
+.db-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--dark-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
 </style>
 </head>
 <body>
 
 <!-- GLOBAL LOADING -->
 <div class="loading" id="loading">
-  <div class="spinner"></div>
-  <p id="loading-txt">Submitting...</p>
+  <div class="loading-card">
+    <div class="loading-logo">🌊</div>
+    <div class="spinner"></div>
+    <p id="loading-txt">Submitting...</p>
+    <p class="loading-sub">Viewpoint Resort · Koh Tao</p>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════
      SCREEN 1: FORM (แจ้งซ่อม)
      ══════════════════════════════════════ -->
 <div class="screen active" id="screen-form">
-  <div class="wave-bg"></div>
+  <div class="wave-bg">
+    <!-- Subtle SVG wave at bottom of header -->
+    <svg class="wave-svg" viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,40 C360,70 1080,10 1440,40 L1440,60 L0,60 Z" fill="#CAF0F8"/>
+    </svg>
+  </div>
+
   <div class="app">
     <div class="header">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:14px">
-          <img src="logo.png" alt="Viewpoint Resort" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.35);background:#111;flex-shrink:0;">
+      <div class="header-top">
+        <div class="header-left">
+          <div class="logo-ring">
+            <img src="logo.png" alt="Viewpoint Resort">
+          </div>
           <div>
             <div class="header-resort" id="hdr-resort">Viewpoint Resort · Koh Tao</div>
             <div class="header-title" id="hdr-title">🔧 Maintenance Request</div>
@@ -325,59 +1335,78 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       </div>
     </div>
 
+    <!-- PROGRESS -->
     <div class="progress-wrap">
       <div class="steps-row">
-        <div class="step active" id="s1"><div class="step-num">1</div><div class="step-lbl" id="lbl-s1">Details</div></div>
+        <div class="step active" id="s1">
+          <div class="step-num">1</div>
+          <div class="step-lbl" id="lbl-s1">Details</div>
+        </div>
         <div class="step-line" id="line1"></div>
-        <div class="step" id="s2"><div class="step-num">2</div><div class="step-lbl" id="lbl-s2">Priority</div></div>
+        <div class="step" id="s2">
+          <div class="step-num">2</div>
+          <div class="step-lbl" id="lbl-s2">Priority</div>
+        </div>
         <div class="step-line" id="line2"></div>
-        <div class="step" id="s3"><div class="step-num">3</div><div class="step-lbl" id="lbl-s3">Confirm</div></div>
+        <div class="step" id="s3">
+          <div class="step-num">3</div>
+          <div class="step-lbl" id="lbl-s3">Confirm</div>
+        </div>
       </div>
-      <div class="progress-track"><div class="progress-fill" id="prog" style="width:33%"></div></div>
+      <div class="progress-track">
+        <div class="progress-fill" id="prog" style="width:33%"></div>
+      </div>
     </div>
 
     <!-- PAGE 1 -->
     <div class="page active" id="p1">
       <div class="card">
-        <div class="section-title" id="sec-location">📍 Location & Department</div>
+        <div class="section-title" id="sec-location">📍 Location &amp; Department</div>
         <div class="field" id="f-department">
           <label id="lbl-dept">Department <span class="req">*</span></label>
-          <select id="department">
-            <option value="">— Select your department —</option>
-            <option>Front Office</option><option>Housekeeping</option>
-            <option>F&amp;B Restaurant &amp; Pool</option><option>F&amp;B Kitchen</option>
-            <option>Chillax Hut</option><option>Security</option><option>Gym</option>
-            <option>Admin</option><option>Staff</option><option>Shop</option>
-          </select>
+          <div class="select-wrap">
+            <select id="department">
+              <option value="">— Select your department —</option>
+              <option>Front Office</option><option>Housekeeping</option>
+              <option>F&amp;B Restaurant &amp; Pool</option><option>F&amp;B Kitchen</option>
+              <option>Chillax Hut</option><option>Security</option><option>Gym</option>
+              <option>Admin</option><option>Staff</option><option>Shop</option>
+            </select>
+          </div>
           <div class="err" id="err-dept">Please select a department</div>
         </div>
         <div class="field" id="f-location">
           <label id="lbl-loc">Location / Room <span class="req">*</span></label>
-          <select id="location">
-            <option value="">— Select location —</option>
-            <optgroup label="🌿 Garden Room (G)"><option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option><option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option></optgroup>
-            <optgroup label="🌊 Sea View Room (S)"><option>S3</option><option>S4</option><option>S5</option><option>S6</option><option>S7</option><option>S8</option><option>S9</option><option>S10</option></optgroup>
-            <optgroup label="🏖 Beachfront Bungalow (B)"><option>B1</option><option>B2</option><option>B3</option></optgroup>
-            <optgroup label="🏊 Pool Villa"><option>Pool Villa 1</option><option>Pool Villa 2</option><option>Pool Villa 3</option><option>Pool Villa 4</option><option>Pool Villa 5</option><option>Pool Villa 6</option><option>Pool Villa 7</option><option>Pool Villa 8</option></optgroup>
-            <optgroup label="🏨 Common Areas"><option>Reception</option><option>Restaurant</option><option>Bar</option><option>Kitchen</option><option>Pool Area</option><option>Chillax Hut</option><option>Gym</option><option>Garden</option><option>Parking</option><option>PV Ship</option></optgroup>
-            <optgroup label="🔧 Back of House"><option>Staff Room</option><option>Staff Kitchen</option><option>Laundry</option><option>Storage</option><option>Server Room</option></optgroup>
-          </select>
+          <div class="select-wrap">
+            <select id="location">
+              <option value="">— Select location —</option>
+              <optgroup label="🌿 Garden Room (G)"><option>G1</option><option>G2</option><option>G3</option><option>G4</option><option>G5</option><option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option></optgroup>
+              <optgroup label="🌊 Sea View Room (S)"><option>S3</option><option>S4</option><option>S5</option><option>S6</option><option>S7</option><option>S8</option><option>S9</option><option>S10</option></optgroup>
+              <optgroup label="🏖 Beachfront Bungalow (B)"><option>B1</option><option>B2</option><option>B3</option></optgroup>
+              <optgroup label="🏊 Pool Villa"><option>Pool Villa 1</option><option>Pool Villa 2</option><option>Pool Villa 3</option><option>Pool Villa 4</option><option>Pool Villa 5</option><option>Pool Villa 6</option><option>Pool Villa 7</option><option>Pool Villa 8</option></optgroup>
+              <optgroup label="🏨 Common Areas"><option>Reception</option><option>Restaurant</option><option>Bar</option><option>Kitchen</option><option>Pool Area</option><option>Chillax Hut</option><option>Gym</option><option>Garden</option><option>Parking</option><option>VP Shop</option></optgroup>
+              <optgroup label="🔧 Back of House"><option>Staff Room</option><option>Staff Kitchen</option><option>Laundry</option><option>Storage</option><option>Server Room</option></optgroup>
+            </select>
+          </div>
           <div class="err" id="err-loc">Please select a location</div>
         </div>
       </div>
+
       <div class="card">
         <div class="section-title" id="sec-job">🔩 Job Details</div>
         <div class="field" id="f-category">
           <label id="lbl-cat">Type of Work <span class="req">*</span></label>
-          <select id="category">
-            <option value="">— Select type —</option>
-            <option>⚡ ไฟฟ้า / Electrical</option><option>🔧 ประปา / Plumbing</option>
-            <option>❄️ แอร์ / Air-Conditioning</option><option>🪑 เฟอร์นิเจอร์ / Furniture</option>
-            <option>🚪 ประตู / หน้าต่าง / Door &amp; Window</option><option>📶 อินเทอร์เน็ต / Wi-Fi</option>
-            <option>🧱 โครงสร้าง / Structure</option><option>🎨 ทาสี / Painting</option>
-            <option>🧹 ทำความสะอาดพิเศษ / Deep Clean</option><option>📦 อุปกรณ์ชำรุด / Equipment</option>
-            <option>⚙️ อื่นๆ / Other</option>
-          </select>
+          <div class="select-wrap">
+            <select id="category">
+              <option value="">— Select type —</option>
+              <option>⚡ ไฟฟ้า / Electrical</option><option>🔧 ประปา / Plumbing</option>
+              <option>❄️ แอร์ / Air-Conditioning</option><option>🪑 เฟอร์นิเจอร์ / Furniture</option>
+              <option>🚪 ประตู / หน้าต่าง / Door &amp; Window</option><option>📶 อินเทอร์เน็ต / Wi-Fi</option>
+              <option>🧱 โครงสร้าง / Structure</option><option>🎨 ทาสี / Painting</option>
+              <option>🧹 ทำความสะอาดพิเศษ / Deep Clean</option><option>📦 อุปกรณ์ชำรุด / Equipment</option>
+              <option>⚙️ อื่นๆ / Other</option>
+            </select>
+          </div>
           <div class="err" id="err-cat">Please select a type</div>
         </div>
         <div class="field" id="f-description">
@@ -387,7 +1416,11 @@ input::placeholder, textarea::placeholder { color:var(--border); }
         </div>
         <div class="field">
           <label id="lbl-photo">📷 Attach Photos (optional)</label>
-          <div class="photo-zone"><input type="file" accept="image/*" multiple id="photo-input" onchange="handlePhoto(this)"><div class="photo-icon-big">🌊</div><p><strong id="photo-hint">Tap to upload or take a photo</strong></p></div>
+          <div class="photo-zone">
+            <input type="file" accept="image/*" multiple id="photo-input" onchange="handlePhoto(this)">
+            <div class="photo-icon-big">🌊</div>
+            <p><strong id="photo-hint">Tap to upload or take a photo</strong></p>
+          </div>
           <div class="photo-thumbs" id="photo-thumbs"></div>
         </div>
       </div>
@@ -397,15 +1430,40 @@ input::placeholder, textarea::placeholder { color:var(--border); }
     <div class="page" id="p2">
       <div class="card">
         <div class="section-title" id="sec-priority">⚡ Priority Level</div>
-        <p id="lbl-priority-sub" style="font-size:13px;color:var(--muted);margin-bottom:16px">Select based on impact to guests and operations</p>
+        <p id="lbl-priority-sub" style="font-size:13px;color:var(--muted);margin-bottom:16px;margin-top:-10px">Select based on impact to guests and operations</p>
         <div class="priority-grid">
-          <button class="p-btn" data-p="urgent" onclick="pickP('urgent')"><span class="p-icon">🔴</span><div><div class="p-name" id="p-urgent-name">Urgent</div><div class="p-desc" id="p-urgent-desc">Fix immediately · Direct guest impact</div></div></button>
-          <button class="p-btn" data-p="high" onclick="pickP('high')"><span class="p-icon">🟠</span><div><div class="p-name" id="p-high-name">High</div><div class="p-desc" id="p-high-desc">Fix today · Affects service</div></div></button>
-          <button class="p-btn" data-p="medium" onclick="pickP('medium')"><span class="p-icon">🟡</span><div><div class="p-name" id="p-medium-name">Medium</div><div class="p-desc" id="p-medium-desc">Fix within 1–2 days</div></div></button>
-          <button class="p-btn" data-p="low" onclick="pickP('low')"><span class="p-icon">🟢</span><div><div class="p-name" id="p-low-name">Low</div><div class="p-desc" id="p-low-desc">Fix when available</div></div></button>
+          <button class="p-btn" data-p="urgent" onclick="pickP('urgent')">
+            <span class="p-icon">🔴</span>
+            <div>
+              <div class="p-name" id="p-urgent-name">Urgent</div>
+              <div class="p-desc" id="p-urgent-desc">Fix immediately · Direct guest impact</div>
+            </div>
+          </button>
+          <button class="p-btn" data-p="high" onclick="pickP('high')">
+            <span class="p-icon">🟠</span>
+            <div>
+              <div class="p-name" id="p-high-name">High</div>
+              <div class="p-desc" id="p-high-desc">Fix today · Affects service</div>
+            </div>
+          </button>
+          <button class="p-btn" data-p="medium" onclick="pickP('medium')">
+            <span class="p-icon">🟡</span>
+            <div>
+              <div class="p-name" id="p-medium-name">Medium</div>
+              <div class="p-desc" id="p-medium-desc">Fix within 1–2 days</div>
+            </div>
+          </button>
+          <button class="p-btn" data-p="low" onclick="pickP('low')">
+            <span class="p-icon">🟢</span>
+            <div>
+              <div class="p-name" id="p-low-name">Low</div>
+              <div class="p-desc" id="p-low-desc">Fix when available</div>
+            </div>
+          </button>
         </div>
-        <div class="err" id="p-err" style="margin-top:8px">Please select a priority level</div>
+        <div class="err" id="p-err" style="margin-top:10px">Please select a priority level</div>
       </div>
+
       <div class="card">
         <div class="section-title" id="sec-reporter">👤 Reporter</div>
         <div class="field" id="f-reporter">
@@ -420,24 +1478,47 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       </div>
     </div>
 
-    <!-- PAGE 3 -->
+    <!-- PAGE 3 — REVIEW -->
     <div class="page" id="p3">
       <div class="notice" id="notice-txt">📱 LINE notification will be sent to Maintenance team immediately</div>
       <div class="card">
-        <div class="review-block"><div class="review-head"><span id="sec-review1">📍 Location & Department</span></div><div class="review-body"><div class="r-row"><span class="r-key" id="rk-dept">Department</span><span class="r-val" id="r-dept">—</span></div><div class="r-row"><span class="r-key" id="rk-loc">Location</span><span class="r-val" id="r-loc">—</span></div></div></div>
-        <div class="review-block"><div class="review-head"><span id="sec-review2">🔩 Job Details</span></div><div class="review-body"><div class="r-row"><span class="r-key" id="rk-type">Type</span><span class="r-val" id="r-cat">—</span></div><div class="r-row"><span class="r-key" id="rk-desc">Description</span><span class="r-val" id="r-desc" style="font-size:12px;max-width:200px">—</span></div><div class="r-row"><span class="r-key" id="rk-pri">Priority</span><span class="r-val" id="r-pri">—</span></div></div></div>
-        <div class="review-block"><div class="review-head"><span id="sec-review3">👤 Reporter</span></div><div class="review-body"><div class="r-row"><span class="r-key" id="rk-name">Name</span><span class="r-val" id="r-rep">—</span></div><div class="r-row"><span class="r-key" id="rk-contact">Contact</span><span class="r-val" id="r-con" style="font-size:12px">—</span></div></div></div>
+        <div class="review-block">
+          <div class="review-head"><span id="sec-review1">📍 Location &amp; Department</span></div>
+          <div class="review-body">
+            <div class="r-row"><span class="r-key" id="rk-dept">Department</span><span class="r-val" id="r-dept">—</span></div>
+            <div class="r-row"><span class="r-key" id="rk-loc">Location</span><span class="r-val" id="r-loc">—</span></div>
+          </div>
+        </div>
+        <div class="review-block">
+          <div class="review-head"><span id="sec-review2">🔩 Job Details</span></div>
+          <div class="review-body">
+            <div class="r-row"><span class="r-key" id="rk-type">Type</span><span class="r-val" id="r-cat">—</span></div>
+            <div class="r-row"><span class="r-key" id="rk-desc">Description</span><span class="r-val" id="r-desc" style="font-size:12px;max-width:200px">—</span></div>
+            <div class="r-row"><span class="r-key" id="rk-pri">Priority</span><span class="r-val" id="r-pri">—</span></div>
+          </div>
+        </div>
+        <div class="review-block">
+          <div class="review-head"><span id="sec-review3">👤 Reporter</span></div>
+          <div class="review-body">
+            <div class="r-row"><span class="r-key" id="rk-name">Name</span><span class="r-val" id="r-rep">—</span></div>
+            <div class="r-row"><span class="r-key" id="rk-contact">Contact</span><span class="r-val" id="r-con" style="font-size:12px">—</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- SUCCESS -->
     <div class="success" id="success">
+      <div class="success-confetti" id="confetti-area"></div>
       <div class="success-wave">✓</div>
-      <h2 id="suc-title" style="font-size:24px;font-weight:700;color:var(--ocean)">Submitted!</h2>
-      <p id="suc-sub" style="color:var(--muted);font-size:14px;margin-top:4px">Your maintenance request has been recorded</p>
+      <h2 id="suc-title" style="font-size:26px;font-weight:800;color:var(--ocean)">Submitted!</h2>
+      <p id="suc-sub" style="color:var(--muted);font-size:14px;margin-top:6px;max-width:260px;line-height:1.6">Your maintenance request has been recorded</p>
       <div class="ticket-box" id="ticket-box">MT-00000</div>
-      <p id="suc-ticket" style="color:var(--muted);font-size:12px">Your Ticket Number</p>
-      <div class="line-notify"><span id="suc-line1">🌊 LINE notification sent to Maintenance team</span><br><span id="suc-line2" style="font-size:11px;opacity:.8">You will receive updates when the status changes</span></div>
+      <p id="suc-ticket" style="color:var(--muted);font-size:12px;margin-bottom:4px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px">Your Ticket Number</p>
+      <div class="line-notify">
+        <span id="suc-line1">🌊 LINE notification sent to Maintenance team</span><br>
+        <span id="suc-line2" style="font-size:11px;opacity:.8">You will receive updates when the status changes</span>
+      </div>
       <button class="btn-close" id="btn-close" onclick="closeLiff()">Close</button>
     </div>
 
@@ -453,7 +1534,11 @@ input::placeholder, textarea::placeholder { color:var(--border); }
      SCREEN 2: STATUS UPDATE
      ══════════════════════════════════════ -->
 <div class="screen" id="screen-status">
-  <div class="wave-bg" style="height:180px"></div>
+  <div class="wave-bg" style="height:200px">
+    <svg class="wave-svg" viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,30 C480,65 960,5 1440,35 L1440,60 L0,60 Z" fill="#CAF0F8"/>
+    </svg>
+  </div>
   <div style="position:relative;z-index:1;">
     <div class="status-header">
       <h1>📋 อัพเดทสถานะงาน</h1>
@@ -464,7 +1549,7 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       <div class="status-user-card">
         <div class="status-avatar" id="st-avatar">?</div>
         <div>
-          <div style="font-size:14px;font-weight:600;" id="st-username">กำลังโหลด...</div>
+          <div style="font-size:14px;font-weight:700;" id="st-username">กำลังโหลด...</div>
           <div class="status-ticket-info">ทีม Maintenance</div>
         </div>
       </div>
@@ -472,7 +1557,7 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       <!-- Ticket ID input -->
       <div class="card" style="margin:0 0 14px;">
         <div class="section-title">🎫 Ticket ID</div>
-        <input type="text" id="st-ticket-input" placeholder="เช่น MT-84536" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1px;">
+        <input type="text" id="st-ticket-input" placeholder="เช่น MT-84536" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:2px;font-size:16px;">
         <p style="font-size:11px;color:var(--muted);margin-top:6px;">กรอก Ticket ID จาก LINE Group หรือ Dashboard</p>
       </div>
 
@@ -480,18 +1565,48 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       <div class="card" style="margin:0 0 14px;">
         <div class="section-title">สถานะงาน</div>
         <div class="status-grid">
-          <div class="status-btn" data-st="acknowledged" onclick="selectSt(this)"><span class="s-emoji">✅</span>รับทราบงานแล้ว</div>
-          <div class="status-btn" data-st="inprogress" onclick="selectSt(this)"><span class="s-emoji">🔄</span>กำลังดำเนินการ</div>
-          <div class="status-btn" data-st="waiting" onclick="selectSt(this)"><span class="s-emoji">⏳</span>รออะไหล่</div>
-          <div class="status-btn" data-st="roomclose" onclick="selectSt(this)"><span class="s-emoji">🚪</span>ต้องปิดห้อง</div>
-          <div class="status-btn" data-st="done" onclick="selectSt(this)" style="grid-column:span 2"><span class="s-emoji">✔️</span>เสร็จแล้ว</div>
+          <div class="status-btn" data-st="acknowledged" onclick="selectSt(this)">
+            <span class="s-emoji">✅</span>
+            <span>รับทราบงานแล้ว</span>
+            <span class="s-desc">Acknowledged</span>
+          </div>
+          <div class="status-btn" data-st="inprogress" onclick="selectSt(this)">
+            <span class="s-emoji">🔄</span>
+            <span>กำลังดำเนินการ</span>
+            <span class="s-desc">In Progress</span>
+          </div>
+          <div class="status-btn" data-st="waiting" onclick="selectSt(this)">
+            <span class="s-emoji">⏳</span>
+            <span>รออะไหล่</span>
+            <span class="s-desc">Waiting for parts</span>
+          </div>
+          <div class="status-btn" data-st="roomclose" onclick="selectSt(this)">
+            <span class="s-emoji">🚪</span>
+            <span>ต้องปิดห้อง</span>
+            <span class="s-desc">Room closure needed</span>
+          </div>
+          <div class="status-btn" data-st="done" onclick="selectSt(this)">
+            <span class="s-emoji">✔️</span>
+            <span>เสร็จแล้ว — งานเสร็จสมบูรณ์</span>
+          </div>
         </div>
+      </div>
+
+      <!-- Cost Estimate -->
+      <div class="card" style="margin:0 0 14px;">
+        <div class="section-title">💰 ประเมินค่าใช้จ่าย <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
+        <div style="position:relative;">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--muted);pointer-events:none;">฿</span>
+          <input type="text" id="st-cost" placeholder="เช่น 500, 1,200-1,500, ฟรี" style="padding-left:34px;">
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px;">ระบุค่าแรง/ค่าอะไหล่โดยประมาณ หรือว่างไว้ได้</p>
       </div>
 
       <!-- Note -->
       <div class="card" style="margin:0 0 14px;">
         <div class="section-title">📝 หมายเหตุ (ถ้ามี)</div>
-        <textarea class="status-note" id="st-note" placeholder="เช่น รอสั่งอะไหล่ 2-3 วัน, ปิดห้องถึง 15:00 น."></textarea>
+        <textarea class="status-note" id="st-note" placeholder="เช่น รอสั่งอะไหล่ 2-3 วัน, ปิดห้องถึง 15:00 น." maxlength="200" oninput="updateNoteCounter(this)"></textarea>
+        <div class="note-counter" id="note-counter">0 / 200</div>
       </div>
 
       <button class="btn-status-submit" id="btn-st-submit" onclick="submitStatus()" disabled>เลือกสถานะก่อนส่ง</button>
@@ -499,9 +1614,9 @@ input::placeholder, textarea::placeholder { color:var(--border); }
       <!-- Status Success -->
       <div class="status-success" id="st-success">
         <div class="success-wave">✓</div>
-        <h2 style="font-size:22px;font-weight:700;color:var(--ocean);margin-top:12px">อัพเดทสำเร็จ!</h2>
-        <p style="color:var(--muted);font-size:14px;margin-top:6px">ระบบแจ้งทีมและผู้แจ้งซ่อมแล้ว</p>
-        <button class="btn-close" style="margin-top:20px" onclick="resetStatus()">อัพเดทงานอื่น</button>
+        <h2 style="font-size:22px;font-weight:800;color:var(--ocean);margin-top:16px">อัพเดทสำเร็จ!</h2>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px;line-height:1.6">ระบบแจ้งทีมและผู้แจ้งซ่อมแล้ว</p>
+        <button class="btn-close" style="margin-top:24px" onclick="resetStatus()">อัพเดทงานอื่น</button>
       </div>
     </div>
   </div>
@@ -514,7 +1629,10 @@ input::placeholder, textarea::placeholder { color:var(--border); }
   <div class="db-topbar">
     <div class="db-logo">
       <div class="db-logo-icon">🔧</div>
-      <div><div class="db-logo-text">Dashboard</div><div class="db-logo-sub">Viewpoint Resort</div></div>
+      <div>
+        <div class="db-logo-text">Dashboard</div>
+        <div class="db-logo-sub">Viewpoint Resort</div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="db-last" id="db-last">—</span>
@@ -525,22 +1643,49 @@ input::placeholder, textarea::placeholder { color:var(--border); }
   <div class="db-main">
     <!-- Stats -->
     <div class="db-stats">
-      <div class="db-stat s-total"><div class="db-stat-num" id="db-total">—</div><div class="db-stat-lbl">ทั้งหมด</div><div class="db-stat-em">📋</div></div>
-      <div class="db-stat s-urgent"><div class="db-stat-num" id="db-urgent">—</div><div class="db-stat-lbl">เร่งด่วน</div><div class="db-stat-em">🔴</div></div>
-      <div class="db-stat s-pending"><div class="db-stat-num" id="db-pending">—</div><div class="db-stat-lbl">รอดำเนินการ</div><div class="db-stat-em">🟡</div></div>
-      <div class="db-stat s-inprogress"><div class="db-stat-num" id="db-inprogress">—</div><div class="db-stat-lbl">กำลังทำ</div><div class="db-stat-em">🔄</div></div>
-      <div class="db-stat s-done"><div class="db-stat-num" id="db-done">—</div><div class="db-stat-lbl">เสร็จแล้ว</div><div class="db-stat-em">✅</div></div>
+      <div class="db-stat s-total">
+        <div class="db-stat-num" id="db-total">—</div>
+        <div class="db-stat-lbl">ทั้งหมด</div>
+        <div class="db-stat-em">📋</div>
+      </div>
+      <div class="db-stat s-urgent">
+        <div class="db-stat-num" id="db-urgent">—</div>
+        <div class="db-stat-lbl">เร่งด่วน</div>
+        <div class="db-stat-em">🔴</div>
+      </div>
+      <div class="db-stat s-pending">
+        <div class="db-stat-num" id="db-pending">—</div>
+        <div class="db-stat-lbl">รอดำเนินการ</div>
+        <div class="db-stat-em">🟡</div>
+      </div>
+      <div class="db-stat s-inprogress">
+        <div class="db-stat-num" id="db-inprogress">—</div>
+        <div class="db-stat-lbl">กำลังทำ</div>
+        <div class="db-stat-em">🔄</div>
+      </div>
+      <div class="db-stat s-done">
+        <div class="db-stat-num" id="db-done">—</div>
+        <div class="db-stat-lbl">เสร็จแล้ว</div>
+        <div class="db-stat-em">✅</div>
+      </div>
     </div>
 
     <!-- Urgent + Status Chart -->
     <div class="db-grid2">
       <div class="db-panel">
-        <div class="db-panel-hdr"><span class="db-panel-title">🔴 งานเร่งด่วน</span><span class="db-panel-count" id="db-urgent-count">0</span></div>
-        <div class="db-panel-body" style="padding:10px 14px;"><div id="db-urgent-list"><div class="db-empty">ไม่มีงานเร่งด่วน 🎉</div></div></div>
+        <div class="db-panel-hdr">
+          <span class="db-panel-title">🔴 งานเร่งด่วน</span>
+          <span class="db-panel-count" id="db-urgent-count">0</span>
+        </div>
+        <div class="db-panel-body" style="padding:8px 14px;">
+          <div id="db-urgent-list"><div class="db-empty">ไม่มีงานเร่งด่วน 🎉</div></div>
+        </div>
       </div>
       <div class="db-panel">
         <div class="db-panel-hdr"><span class="db-panel-title">📊 สถานะงาน</span></div>
-        <div class="db-panel-body"><div class="db-chart-wrap"><canvas id="chart-status"></canvas></div></div>
+        <div class="db-panel-body">
+          <div class="db-chart-wrap"><canvas id="chart-status"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -548,17 +1693,24 @@ input::placeholder, textarea::placeholder { color:var(--border); }
     <div class="db-grid2">
       <div class="db-panel">
         <div class="db-panel-hdr"><span class="db-panel-title">🏢 แยกตามแผนก</span></div>
-        <div class="db-panel-body"><div class="db-chart-wrap"><canvas id="chart-dept"></canvas></div></div>
+        <div class="db-panel-body">
+          <div class="db-chart-wrap"><canvas id="chart-dept"></canvas></div>
+        </div>
       </div>
       <div class="db-panel">
         <div class="db-panel-hdr"><span class="db-panel-title">⚡ ความเร่งด่วน</span></div>
-        <div class="db-panel-body"><div class="db-chart-wrap"><canvas id="chart-priority"></canvas></div></div>
+        <div class="db-panel-body">
+          <div class="db-chart-wrap"><canvas id="chart-priority"></canvas></div>
+        </div>
       </div>
     </div>
 
     <!-- All Tickets Table -->
     <div class="db-panel">
-      <div class="db-panel-hdr"><span class="db-panel-title">📋 รายการงานทั้งหมด</span><span class="db-panel-count" id="db-table-count">0 รายการ</span></div>
+      <div class="db-panel-hdr">
+        <span class="db-panel-title">📋 รายการงานทั้งหมด</span>
+        <span class="db-panel-count" id="db-table-count">0 รายการ</span>
+      </div>
       <div class="db-panel-body">
         <div class="db-filters">
           <button class="db-filter active" onclick="dbFilter('all',this)">ทั้งหมด</button>
@@ -571,8 +1723,16 @@ input::placeholder, textarea::placeholder { color:var(--border); }
         </div>
         <div class="db-table-wrap">
           <table class="db-table">
-            <thead><tr><th>Ticket</th><th>วันที่</th><th>แผนก</th><th>สถานที่</th><th>ประเภท</th><th>อาการ</th><th>ความเร่งด่วน</th><th>ผู้แจ้ง</th><th>สถานะ</th><th>อัพเดทโดย</th><th>หมายเหตุ</th></tr></thead>
-            <tbody id="db-tbody"><tr><td colspan="11" class="db-empty">กำลังโหลด...</td></tr></tbody>
+            <thead>
+              <tr>
+                <th>Ticket</th><th>วันที่</th><th>แผนก</th><th>สถานที่</th>
+                <th>ประเภท</th><th>อาการ</th><th>ความเร่งด่วน</th>
+                <th>ผู้แจ้ง</th><th>สถานะ</th><th>อัพเดทโดย</th><th>หมายเหตุ</th><th>รูป</th>
+              </tr>
+            </thead>
+            <tbody id="db-tbody">
+              <tr><td colspan="12" class="db-empty">กำลังโหลด...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -583,15 +1743,21 @@ input::placeholder, textarea::placeholder { color:var(--border); }
 <!-- ══════ BOTTOM NAV ══════ -->
 <nav class="bottom-nav">
   <button class="nav-item active" id="nav-form" onclick="switchScreen('form')">
-    <span class="nav-icon">🔧</span><span>แจ้งซ่อม</span>
+    <div class="nav-pill"></div>
+    <span class="nav-icon">🔧</span>
+    <span class="nav-label">แจ้งซ่อม</span>
     <div class="nav-indicator"></div>
   </button>
   <button class="nav-item" id="nav-status" onclick="switchScreen('status')">
-    <span class="nav-icon">📋</span><span>สถานะ</span>
+    <div class="nav-pill"></div>
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">สถานะ</span>
     <div class="nav-indicator"></div>
   </button>
   <button class="nav-item" id="nav-dashboard" onclick="switchScreen('dashboard')">
-    <span class="nav-icon">📊</span><span>Dashboard</span>
+    <div class="nav-pill"></div>
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Dashboard</span>
     <div class="nav-indicator"></div>
   </button>
 </nav>
@@ -638,6 +1804,19 @@ async function initLiff() {
     document.getElementById("st-username").textContent = profile.displayName;
     document.getElementById("st-avatar").textContent = profile.displayName.charAt(0).toUpperCase();
   } catch(e) { console.log("dev mode:", e.message); }
+
+  // อ่าน URL params: ?ticketId=MT-xxxxx&status=acknowledged
+  const urlParams = new URLSearchParams(location.search);
+  const ticketParam = urlParams.get("ticketId");
+  const statusParam = urlParams.get("status");
+  if (ticketParam) {
+    document.getElementById("st-ticket-input").value = ticketParam.toUpperCase();
+    switchScreen("status");
+    if (statusParam) {
+      const btn = document.querySelector(`.status-btn[data-st="${statusParam}"]`);
+      if (btn) selectSt(btn);
+    }
+  }
 }
 initLiff();
 
@@ -778,6 +1957,18 @@ applyLang();
 // ═══════════════════════════════
 //  FORM LOGIC
 // ═══════════════════════════════
+function updateStepNums() {
+  [1,2,3].forEach(i => {
+    const numEl = document.querySelector("#s"+i+" .step-num");
+    const s = document.getElementById("s"+i);
+    if (s.classList.contains("done")) {
+      numEl.textContent = "✓";
+    } else {
+      numEl.textContent = i;
+    }
+  });
+}
+
 function updateFormUI() {
   const t = T[lang];
   [1,2,3].forEach(i => {
@@ -788,12 +1979,14 @@ function updateFormUI() {
     if (i === formPage) s.classList.add("active");
     else if (i < formPage) s.classList.add("done");
   });
+  updateStepNums();
   [1,2].forEach(i => document.getElementById("line"+i).classList.toggle("done", i < formPage));
   document.getElementById("prog").style.width = (formPage/3*100)+"%";
   document.getElementById("btn-back").style.display = formPage > 1 ? "" : "none";
   document.getElementById("btn-next").textContent = formPage === 3 ? t.btn_confirm : t.btn_next;
   document.getElementById("form-nav").style.display = formPage > 3 ? "none" : "";
   document.getElementById("success").classList.toggle("active", formPage > 3);
+  if (formPage > 3) spawnConfetti();
   window.scrollTo({top:0, behavior:"smooth"});
 }
 
@@ -828,13 +2021,54 @@ function pickP(p) {
   document.querySelectorAll(".p-btn").forEach(b => b.classList.toggle("sel", b.dataset.p === p));
   document.getElementById("p-err").style.display = "none";
 }
+let pendingPhotos = [];
+
 function handlePhoto(input) {
   const wrap = document.getElementById("photo-thumbs");
   wrap.innerHTML = "";
-  Array.from(input.files).slice(0,4).forEach(f => {
-    const img = document.createElement("img"); img.className = "photo-thumb";
-    img.src = URL.createObjectURL(f); wrap.appendChild(img);
+  pendingPhotos = Array.from(input.files).slice(0, 4);
+  pendingPhotos.forEach(f => {
+    const img = document.createElement("img");
+    img.className = "photo-thumb";
+    img.src = URL.createObjectURL(f);
+    wrap.appendChild(img);
   });
+}
+
+function compressImage(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ base64: reader.result.split(",")[1], name: file.name || "photo.jpg" });
+        reader.readAsDataURL(blob);
+      }, "image/jpeg", 0.78);
+    };
+    img.src = url;
+  });
+}
+
+async function uploadPhotos(ticketId) {
+  if (!pendingPhotos.length) return;
+  try {
+    const images = await Promise.all(pendingPhotos.map(compressImage));
+    fetch(CONFIG.WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "uploadPhotos", ticketId, images }),
+      mode: "no-cors",
+    }).catch(() => {});
+  } catch(e) { console.log("Photo upload error:", e); }
 }
 function fillReview() {
   document.getElementById("r-dept").textContent = g("department");
@@ -846,6 +2080,27 @@ function fillReview() {
   const p = PRI_LABELS[priority];
   const pName = T[lang]["p_"+priority+"_name"];
   document.getElementById("r-pri").innerHTML = `<span class="badge ${p.cls}">● ${pName}</span>`;
+}
+
+function spawnConfetti() {
+  const area = document.getElementById("confetti-area");
+  if (!area) return;
+  area.innerHTML = "";
+  const colors = ["#0077B6","#00B4D8","#48CAE4","#2DC653","#FFB347","#FF6B6B","#90E0EF"];
+  for (let i = 0; i < 22; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.cssText = `
+      left: ${Math.random()*100}%;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${5 + Math.random()*8}px;
+      height: ${5 + Math.random()*8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-delay: ${Math.random()*1.5}s;
+      animation-duration: ${2 + Math.random()}s;
+    `;
+    area.appendChild(piece);
+  }
 }
 
 async function submitForm() {
@@ -871,6 +2126,7 @@ async function submitForm() {
     document.getElementById("ticket-box").textContent = ticketId;
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     formPage = 99; updateFormUI();
+    uploadPhotos(ticketId); // fire-and-forget ส่งรูปไป Drive
   } catch(err) {
     document.getElementById("loading").classList.remove("active");
     alert(T[lang].err_desc + "\n" + err.message);
@@ -891,6 +2147,10 @@ function selectSt(el) {
   btn.textContent = "✅ ส่งการอัพเดท";
 }
 
+function updateNoteCounter(el) {
+  document.getElementById("note-counter").textContent = el.value.length + " / 200";
+}
+
 async function submitStatus() {
   const ticketId = document.getElementById("st-ticket-input").value.trim().toUpperCase();
   if (!ticketId) { alert("กรุณากรอก Ticket ID"); return; }
@@ -900,6 +2160,7 @@ async function submitStatus() {
   const params = new URLSearchParams({
     ticketId, status: selectedSt,
     note: document.getElementById("st-note").value.trim(),
+    cost: document.getElementById("st-cost").value.trim(),
     updatedBy: profile?.displayName || "",
     lineUserId: profile?.userId || "",
   });
@@ -921,6 +2182,8 @@ function resetStatus() {
   selectedSt = "";
   document.getElementById("st-ticket-input").value = "";
   document.getElementById("st-note").value = "";
+  document.getElementById("st-cost").value = "";
+  document.getElementById("note-counter").textContent = "0 / 200";
   document.querySelectorAll(".status-btn").forEach(b => b.classList.remove("selected"));
   document.getElementById("btn-st-submit").disabled = true;
   document.getElementById("btn-st-submit").textContent = "เลือกสถานะก่อนส่ง";
@@ -932,7 +2195,7 @@ function resetStatus() {
 //  DASHBOARD LOGIC
 // ═══════════════════════════════
 let dbLoaded = false, dbCharts = {}, dbAllData = [], dbCurrentFilter = "all";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
 function parsePri(str) {
   if (!str) return "unknown";
@@ -977,7 +2240,8 @@ async function loadDashboard() {
       priority: r.c[6]?.v||"", reporter: r.c[7]?.v||"",
       status: r.c[11]?.v||"🟡 Pending",
       updatedBy: r.c[12]?.v||"", note: r.c[13]?.v||"",
-    }));
+      photos: r.c[14]?.v||"",
+    })).filter(d => d.ticketId && d.ticketId.startsWith("MT-"));
     dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderTable("all");
     document.getElementById("db-last").textContent = new Date().toLocaleTimeString("th-TH");
     dbLoaded = true;
@@ -1044,8 +2308,13 @@ function dbRenderTable(filter) {
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
   document.getElementById("db-tbody").innerHTML = rows.length===0
-    ? `<tr><td colspan="11" class="db-empty">ไม่พบข้อมูล</td></tr>`
-    : rows.map(d=>`<tr><td><span class="db-ticket-id">${d.ticketId}</span></td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td></tr>`).join("");
+    ? `<tr><td colspan="12" class="db-empty">ไม่พบข้อมูล</td></tr>`
+    : rows.map(d=>{
+        const photoCell = d.photos
+          ? `<a href="${d.photos.replace(/^📷 \d+ รูป: /,'')}" target="_blank" style="color:var(--accent);font-size:10px;white-space:nowrap;">📷 ดูรูป</a>`
+          : `<span style="color:var(--dark-muted);font-size:10px;">—</span>`;
+        return `<tr><td><span class="db-ticket-id">${d.ticketId}</span></td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
+      }).join("");
 }
 
 // Auto refresh dashboard ทุก 60 วิ
