@@ -1609,6 +1609,17 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         <div class="note-counter" id="note-counter">0 / 200</div>
       </div>
 
+      <!-- Completion Photos — shown only when status = done -->
+      <div class="card" id="completion-photo-card" style="margin:0 0 14px;display:none;">
+        <div class="section-title">📷 รูปงานเสร็จ <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
+        <div class="photo-zone">
+          <input type="file" accept="image/*" multiple id="completion-photo-input" onchange="handleCompletionPhoto(this)">
+          <div class="photo-icon-big">🏁</div>
+          <p><strong>แนบรูปผลงานที่เสร็จแล้ว</strong></p>
+        </div>
+        <div class="photo-thumbs" id="completion-photo-thumbs"></div>
+      </div>
+
       <button class="btn-status-submit" id="btn-st-submit" onclick="submitStatus()" disabled>เลือกสถานะก่อนส่ง</button>
 
       <!-- Status Success -->
@@ -1712,6 +1723,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         <span class="db-panel-count" id="db-table-count">0 รายการ</span>
       </div>
       <div class="db-panel-body">
+        <div style="font-size:10px;color:var(--dark-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">สถานะ</div>
         <div class="db-filters">
           <button class="db-filter active" onclick="dbFilter('all',this)">ทั้งหมด</button>
           <button class="db-filter" onclick="dbFilter('pending',this)">🟡 รอ</button>
@@ -1720,6 +1732,10 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           <button class="db-filter" onclick="dbFilter('roomclose',this)">🚪 ปิดห้อง</button>
           <button class="db-filter" onclick="dbFilter('done',this)">✅ เสร็จ</button>
           <button class="db-filter" onclick="dbFilter('urgent',this)">🔴 URGENT</button>
+        </div>
+        <div style="font-size:10px;color:var(--dark-muted);margin-bottom:4px;margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">แผนก</div>
+        <div class="db-filters" id="db-dept-filters">
+          <button class="db-filter active" onclick="dbDeptFilterSet('all',this)">ทั้งหมด</button>
         </div>
         <div class="db-table-wrap">
           <table class="db-table">
@@ -2145,6 +2161,7 @@ function selectSt(el) {
   const btn = document.getElementById("btn-st-submit");
   btn.disabled = false;
   btn.textContent = "✅ ส่งการอัพเดท";
+  document.getElementById("completion-photo-card").style.display = selectedSt === "done" ? "" : "none";
 }
 
 function updateNoteCounter(el) {
@@ -2171,6 +2188,7 @@ async function submitStatus() {
       fetch(CONFIG.WEBHOOK_URL+"?action=updateStatus&"+params.toString(), {method:"GET",mode:"no-cors"}).catch(()=>{});
       await new Promise(r => setTimeout(r, 1500));
     }
+    if (selectedSt === "done") uploadCompletionPhotos(ticketId);
     document.getElementById("status-body") && (document.querySelector(".status-body").style.display="none");
     document.getElementById("st-success").classList.add("active");
   } catch(err) {
@@ -2189,12 +2207,42 @@ function resetStatus() {
   document.getElementById("btn-st-submit").textContent = "เลือกสถานะก่อนส่ง";
   document.getElementById("st-success").classList.remove("active");
   document.querySelector(".status-body").style.display = "";
+  pendingCompletionPhotos = [];
+  document.getElementById("completion-photo-thumbs").innerHTML = "";
+  document.getElementById("completion-photo-card").style.display = "none";
+  document.getElementById("completion-photo-input").value = "";
+}
+
+let pendingCompletionPhotos = [];
+function handleCompletionPhoto(input) {
+  const wrap = document.getElementById("completion-photo-thumbs");
+  wrap.innerHTML = "";
+  pendingCompletionPhotos = Array.from(input.files).slice(0, 6);
+  pendingCompletionPhotos.forEach(f => {
+    const img = document.createElement("img");
+    img.className = "photo-thumb";
+    img.src = URL.createObjectURL(f);
+    wrap.appendChild(img);
+  });
+}
+
+async function uploadCompletionPhotos(ticketId) {
+  if (!pendingCompletionPhotos.length) return;
+  try {
+    const images = await Promise.all(pendingCompletionPhotos.map(compressImage));
+    fetch(CONFIG.WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "uploadCompletionPhotos", ticketId, images }),
+      mode: "no-cors",
+    }).catch(() => {});
+  } catch(e) { console.log("Completion photo upload error:", e); }
 }
 
 // ═══════════════════════════════
 //  DASHBOARD LOGIC
 // ═══════════════════════════════
-let dbLoaded = false, dbCharts = {}, dbAllData = [], dbCurrentFilter = "all";
+let dbLoaded = false, dbCharts = {}, dbAllData = [], dbCurrentFilter = "all", dbDeptFilter = "all";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
 function parsePri(str) {
@@ -2242,7 +2290,8 @@ async function loadDashboard() {
       updatedBy: r.c[12]?.v||"", note: r.c[13]?.v||"",
       photos: r.c[14]?.v||"",
     })).filter(d => d.ticketId && d.ticketId.startsWith("MT-"));
-    dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderTable("all");
+    dbDeptFilter = "all";
+    dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderDeptFilters(); dbRenderTable("all");
     document.getElementById("db-last").textContent = new Date().toLocaleTimeString("th-TH");
     dbLoaded = true;
   } catch(e) {
@@ -2298,14 +2347,29 @@ function dbRenderCharts() {
 }
 function dbFilter(f, btn) {
   dbCurrentFilter = f;
-  document.querySelectorAll(".db-filter").forEach(b => b.classList.remove("active"));
+  // deactivate only status filter buttons (siblings of btn, not dept row)
+  btn.closest(".db-filters").querySelectorAll(".db-filter").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   dbRenderTable(f);
+}
+function dbDeptFilterSet(dept, btn) {
+  dbDeptFilter = dept;
+  document.querySelectorAll("#db-dept-filters .db-filter").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  dbRenderTable(dbCurrentFilter);
+}
+function dbRenderDeptFilters() {
+  const depts = ["all", ...new Set(dbAllData.map(d => d.department).filter(Boolean).sort())];
+  const wrap = document.getElementById("db-dept-filters");
+  wrap.innerHTML = depts.map(d =>
+    `<button class="db-filter${d === "all" ? " active" : ""}" data-dept="${d}" onclick="dbDeptFilterSet('${d.replace(/'/g,"\\'")}',this)">${d === "all" ? "ทั้งหมด" : d}</button>`
+  ).join("");
 }
 function dbRenderTable(filter) {
   let rows = dbAllData;
   if (filter==="urgent") rows = rows.filter(d=>parsePri(d.priority)==="urgent");
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
+  if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
   document.getElementById("db-tbody").innerHTML = rows.length===0
     ? `<tr><td colspan="12" class="db-empty">ไม่พบข้อมูล</td></tr>`
