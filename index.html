@@ -1626,7 +1626,19 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
       <!-- Assign To -->
       <div class="card" style="margin:0 0 14px;">
         <div class="section-title">👷 มอบหมายให้ <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
-        <div class="assign-grid" id="assign-grid"></div>
+        <div class="assign-grid" id="assign-grid">
+          <div class="assign-chip" onclick="selectAssignee(this,'SHWE DOWN GYI')">SHWE DOWN GYI</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Thiha Oo')">Thiha Oo</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Hla Moe')">Hla Moe</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Tun Myint Soe')">Tun Myint Soe</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Than Myint Aung')">Than Myint Aung</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Aung Myo Thant')">Aung Myo Thant</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Wine Chit')">Wine Chit</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'San Win')">San Win</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Min Wai Phyo')">Min Wai Phyo</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Thi Ha Zaw')">Thi Ha Zaw</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Mike')">Mike</div>
+        </div>
         <p style="font-size:11px;color:var(--muted);margin-top:8px;">กดเลือกช่าง/พนักงานที่รับผิดชอบ กดซ้ำเพื่อยกเลิก</p>
       </div>
 
@@ -1886,7 +1898,6 @@ async function initLiff() {
   }
 }
 initLiff();
-initAssignGrid();
 
 // ═══════════════════════════════
 //  i18n
