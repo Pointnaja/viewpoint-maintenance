@@ -1176,6 +1176,37 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 /* CHARTS */
 .db-chart-wrap { position: relative; height: 190px; }
 
+/* ASSIGN CHIPS */
+.assign-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.assign-chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: 'Prompt', sans-serif;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+.assign-chip:hover { border-color: var(--ocean); color: var(--ocean); }
+.assign-chip.selected {
+  background: var(--ocean);
+  border-color: var(--ocean);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,119,182,0.3);
+}
+
+/* WORKLOAD PANEL */
+.workload-list { display: flex; flex-direction: column; gap: 8px; }
+.workload-row { display: flex; align-items: center; gap: 10px; }
+.workload-name { font-size: 12px; color: var(--dark-text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workload-bar-wrap { flex: 2; background: var(--dark-surface2); border-radius: 8px; height: 8px; overflow: hidden; }
+.workload-bar { height: 100%; background: var(--accent); border-radius: 8px; transition: width 0.4s ease; }
+.workload-count { font-size: 11px; color: var(--dark-muted); min-width: 20px; text-align: right; }
+
 /* FILTERS */
 .db-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .db-filter {
@@ -1592,6 +1623,13 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         </div>
       </div>
 
+      <!-- Assign To -->
+      <div class="card" style="margin:0 0 14px;">
+        <div class="section-title">👷 มอบหมายให้ <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
+        <div class="assign-grid" id="assign-grid"></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">กดเลือกช่าง/พนักงานที่รับผิดชอบ กดซ้ำเพื่อยกเลิก</p>
+      </div>
+
       <!-- Cost Estimate -->
       <div class="card" style="margin:0 0 14px;">
         <div class="section-title">💰 ประเมินค่าใช้จ่าย <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
@@ -1716,6 +1754,19 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
       </div>
     </div>
 
+    <!-- Workload Panel -->
+    <div class="db-panel">
+      <div class="db-panel-hdr">
+        <span class="db-panel-title">👷 Workload ทีมช่าง</span>
+        <span class="db-panel-count" id="db-workload-sub">งานที่ยังค้างอยู่</span>
+      </div>
+      <div class="db-panel-body">
+        <div class="workload-list" id="db-workload-list">
+          <div class="db-empty">กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- All Tickets Table -->
     <div class="db-panel">
       <div class="db-panel-hdr">
@@ -1743,11 +1794,11 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
               <tr>
                 <th>Ticket</th><th>วันที่</th><th>แผนก</th><th>สถานที่</th>
                 <th>ประเภท</th><th>อาการ</th><th>ความเร่งด่วน</th>
-                <th>ผู้แจ้ง</th><th>สถานะ</th><th>อัพเดทโดย</th><th>หมายเหตุ</th><th>รูป</th>
+                <th>ผู้แจ้ง</th><th>สถานะ</th><th>มอบหมาย</th><th>อัพเดทโดย</th><th>หมายเหตุ</th><th>รูป</th>
               </tr>
             </thead>
             <tbody id="db-tbody">
-              <tr><td colspan="12" class="db-empty">กำลังโหลด...</td></tr>
+              <tr><td colspan="13" class="db-empty">กำลังโหลด...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1835,6 +1886,7 @@ async function initLiff() {
   }
 }
 initLiff();
+initAssignGrid();
 
 // ═══════════════════════════════
 //  i18n
@@ -2153,6 +2205,33 @@ function closeLiff() { try { liff.closeWindow(); } catch(e) { window.close(); } 
 // ═══════════════════════════════
 //  STATUS UPDATE LOGIC
 // ═══════════════════════════════
+// ── TEAM MEMBERS ─────────────────────────────────────────────
+const TEAM_MEMBERS = [
+  "SHWE DOWN GYI","Thiha Oo","Hla Moe","Tun Myint Soe",
+  "Than Myint Aung","Aung Myo Thant","Wine Chit","San Win",
+  "Min Wai Phyo","Thi Ha Zaw","Mike"
+];
+let selectedAssignee = "";
+
+function initAssignGrid() {
+  const grid = document.getElementById("assign-grid");
+  if (!grid) return;
+  grid.innerHTML = TEAM_MEMBERS.map(name =>
+    `<div class="assign-chip" onclick="selectAssignee(this,'${name.replace(/'/g,"\\'")}')">${name}</div>`
+  ).join("");
+}
+
+function selectAssignee(el, name) {
+  if (selectedAssignee === name) {
+    selectedAssignee = "";
+    document.querySelectorAll(".assign-chip").forEach(c => c.classList.remove("selected"));
+  } else {
+    selectedAssignee = name;
+    document.querySelectorAll(".assign-chip").forEach(c => c.classList.remove("selected"));
+    el.classList.add("selected");
+  }
+}
+
 let selectedSt = "";
 function selectSt(el) {
   document.querySelectorAll(".status-btn").forEach(b => b.classList.remove("selected"));
@@ -2180,6 +2259,7 @@ async function submitStatus() {
     cost: document.getElementById("st-cost").value.trim(),
     updatedBy: profile?.displayName || "",
     lineUserId: profile?.userId || "",
+    assignedTo: selectedAssignee,
   });
   try {
     try {
@@ -2211,6 +2291,8 @@ function resetStatus() {
   document.getElementById("completion-photo-thumbs").innerHTML = "";
   document.getElementById("completion-photo-card").style.display = "none";
   document.getElementById("completion-photo-input").value = "";
+  selectedAssignee = "";
+  document.querySelectorAll(".assign-chip").forEach(c => c.classList.remove("selected"));
 }
 
 let pendingCompletionPhotos = [];
@@ -2288,10 +2370,11 @@ async function loadDashboard() {
       priority: r.c[6]?.v||"", reporter: r.c[7]?.v||"",
       status: r.c[11]?.v||"🟡 Pending",
       updatedBy: r.c[12]?.v||"", note: r.c[13]?.v||"",
-      photos: r.c[14]?.v||"",
+      photos: r.c[14]?.v||"", cost: r.c[15]?.v||"",
+      assignedTo: r.c[16]?.v||"",
     })).filter(d => d.ticketId && d.ticketId.startsWith("MT-"));
     dbDeptFilter = "all";
-    dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderDeptFilters(); dbRenderTable("all");
+    dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderDeptFilters(); dbRenderWorkload(); dbRenderTable("all");
     document.getElementById("db-last").textContent = new Date().toLocaleTimeString("th-TH");
     dbLoaded = true;
   } catch(e) {
@@ -2358,6 +2441,28 @@ function dbDeptFilterSet(dept, btn) {
   btn.classList.add("active");
   dbRenderTable(dbCurrentFilter);
 }
+function dbRenderWorkload() {
+  const active = dbAllData.filter(d => parseSt(d.status) !== "done");
+  const counts = {};
+  TEAM_MEMBERS.forEach(m => counts[m] = 0);
+  active.forEach(d => { if (d.assignedTo && counts[d.assignedTo] !== undefined) counts[d.assignedTo]++; });
+  const max = Math.max(1, ...Object.values(counts));
+  const sorted = Object.entries(counts).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const wrap = document.getElementById("db-workload-list");
+  if (!wrap) return;
+  if (sorted.length === 0) {
+    wrap.innerHTML = '<div class="db-empty" style="text-align:center;padding:16px;">ยังไม่มีการมอบหมายงาน</div>';
+    return;
+  }
+  wrap.innerHTML = sorted.map(([name, count]) => `
+    <div class="workload-row">
+      <div class="workload-name">👷 ${name}</div>
+      <div class="workload-bar-wrap"><div class="workload-bar" style="width:${Math.round(count/max*100)}%"></div></div>
+      <div class="workload-count">${count}</div>
+    </div>`).join("");
+  document.getElementById("db-workload-sub").textContent = `${active.length} งานค้าง`;
+}
+
 function dbRenderDeptFilters() {
   const depts = ["all", ...new Set(dbAllData.map(d => d.department).filter(Boolean).sort())];
   const wrap = document.getElementById("db-dept-filters");
@@ -2372,12 +2477,15 @@ function dbRenderTable(filter) {
   if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
   document.getElementById("db-tbody").innerHTML = rows.length===0
-    ? `<tr><td colspan="12" class="db-empty">ไม่พบข้อมูล</td></tr>`
+    ? `<tr><td colspan="13" class="db-empty">ไม่พบข้อมูล</td></tr>`
     : rows.map(d=>{
         const photoCell = d.photos
           ? `<a href="${d.photos.replace(/^📷 \d+ รูป: /,'')}" target="_blank" style="color:var(--accent);font-size:10px;white-space:nowrap;">📷 ดูรูป</a>`
           : `<span style="color:var(--dark-muted);font-size:10px;">—</span>`;
-        return `<tr><td><span class="db-ticket-id">${d.ticketId}</span></td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
+        const assignCell = d.assignedTo
+          ? `<span style="font-size:11px;font-weight:600;color:#0077B6;">👷 ${d.assignedTo}</span>`
+          : `<span style="font-size:10px;color:var(--dark-muted);">—</span>`;
+        return `<tr><td><span class="db-ticket-id">${d.ticketId}</span></td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="white-space:nowrap">${assignCell}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
       }).join("");
 }
 
