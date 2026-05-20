@@ -1231,6 +1231,77 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   box-shadow: 0 2px 10px rgba(0,114,255,0.35);
 }
 
+/* SLA */
+.sla-overdue td { background: rgba(220,38,38,0.07) !important; }
+.sla-overdue:hover td { background: rgba(220,38,38,0.12) !important; }
+.sla-badge { display:inline-block; font-size:9px; font-weight:700; color:#dc2626; background:#fee2e2; border-radius:6px; padding:1px 5px; margin-top:2px; white-space:nowrap; }
+.sla-ok-badge { display:inline-block; font-size:9px; color:#6b7280; background:rgba(107,114,128,.1); border-radius:6px; padding:1px 5px; margin-top:2px; white-space:nowrap; }
+
+/* MODAL OVERLAY */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--white);
+  border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 640px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  animation: slideUp 0.25s ease;
+  overflow: hidden;
+}
+.modal-handle { width:40px; height:4px; background:#D1D5DB; border-radius:4px; margin:12px auto 0; flex-shrink:0; }
+.modal-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #EEF2F7;
+  flex-shrink: 0;
+}
+.modal-ticket-id { font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:800; color:var(--ocean); flex:1; }
+.modal-close { width:32px; height:32px; border-radius:50%; background:#F3F4F6; border:none; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.modal-body { overflow-y:auto; padding:14px 18px; flex:1; }
+.modal-section { margin-bottom:14px; }
+.modal-section-title { font-size:10px; font-weight:700; color:#9CA3AF; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+.modal-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.modal-info-item { background:#F8FAFC; border-radius:10px; padding:8px 10px; }
+.modal-info-label { font-size:10px; color:#9CA3AF; }
+.modal-info-value { font-size:12px; font-weight:600; color:#1A3A4A; margin-top:2px; line-height:1.4; }
+.modal-status-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.modal-status-btn {
+  padding:10px; border-radius:12px; border:1.5px solid var(--border);
+  background:var(--surface); text-align:center; cursor:pointer;
+  transition:var(--transition); font-size:12px; color:var(--muted);
+}
+.modal-status-btn.selected { background:var(--ocean); border-color:var(--ocean); color:#fff; font-weight:700; }
+.modal-assign-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.modal-assign-chip {
+  padding:5px 12px; border-radius:20px; font-size:11px;
+  background:var(--surface); border:1.5px solid var(--border);
+  color:var(--muted); cursor:pointer; transition:var(--transition);
+}
+.modal-assign-chip.selected { background:var(--ocean); border-color:var(--ocean); color:#fff; font-weight:600; }
+.modal-footer {
+  padding:12px 18px; border-top:1px solid #EEF2F7; flex-shrink:0;
+  display:flex; gap:10px;
+}
+.modal-btn-submit {
+  flex:1; padding:13px; border:none; border-radius:14px;
+  background:var(--ocean); color:#fff; font-size:14px; font-weight:700;
+  font-family:'Prompt',sans-serif; cursor:pointer; transition:var(--transition);
+}
+.modal-btn-submit:disabled { opacity:.5; cursor:not-allowed; }
+.modal-btn-submit:not(:disabled):hover { background:var(--deep); }
+
+/* EXPORT BUTTON */
+.db-export { background:rgba(0,198,255,.12); border:1px solid rgba(0,198,255,.3); color:var(--accent); padding:6px 12px; border-radius:10px; font-size:11px; font-family:'Prompt',sans-serif; cursor:pointer; transition:var(--transition); }
+.db-export:hover { background:rgba(0,198,255,.2); }
+
 /* TABLE */
 .db-table-wrap {
   overflow-x: auto;
@@ -1697,6 +1768,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="db-last" id="db-last">—</span>
+      <button class="db-export" onclick="exportCSV()">⬇ Export</button>
       <button class="db-refresh" onclick="loadDashboard()">⟳ รีเฟรช</button>
     </div>
   </div>
@@ -1795,6 +1867,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           <button class="db-filter" onclick="dbFilter('roomclose',this)">🚪 ปิดห้อง</button>
           <button class="db-filter" onclick="dbFilter('done',this)">✅ เสร็จ</button>
           <button class="db-filter" onclick="dbFilter('urgent',this)">🔴 URGENT</button>
+          <button class="db-filter" onclick="dbFilter('overdue',this)" style="border-color:#dc2626;color:#dc2626;">⚠️ เกิน SLA</button>
         </div>
         <div style="font-size:10px;color:var(--dark-muted);margin-bottom:4px;margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">แผนก</div>
         <div class="db-filters" id="db-dept-filters">
@@ -1815,6 +1888,83 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           </table>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TICKET MODAL ══════ -->
+<div class="modal-overlay" id="ticket-modal" onclick="closeTicketModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-ticket-id" id="modal-ticket-id">MT-00000</span>
+      <span id="modal-status-badge"></span>
+      <button class="modal-close" onclick="closeTicketModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Ticket Info -->
+      <div class="modal-section">
+        <div class="modal-section-title">📋 รายละเอียดงาน</div>
+        <div class="modal-info-grid">
+          <div class="modal-info-item"><div class="modal-info-label">📍 สถานที่</div><div class="modal-info-value" id="modal-location">—</div></div>
+          <div class="modal-info-item"><div class="modal-info-label">🏢 แผนก</div><div class="modal-info-value" id="modal-dept">—</div></div>
+          <div class="modal-info-item"><div class="modal-info-label">🔩 ประเภท</div><div class="modal-info-value" id="modal-cat">—</div></div>
+          <div class="modal-info-item"><div class="modal-info-label">👤 ผู้แจ้ง</div><div class="modal-info-value" id="modal-reporter">—</div></div>
+        </div>
+        <div class="modal-info-item" style="margin-top:8px;">
+          <div class="modal-info-label">📝 อาการ</div>
+          <div class="modal-info-value" id="modal-desc">—</div>
+        </div>
+        <div class="modal-info-grid" style="margin-top:8px;">
+          <div class="modal-info-item"><div class="modal-info-label">⚡ ความเร่งด่วน</div><div class="modal-info-value" id="modal-priority">—</div></div>
+          <div class="modal-info-item"><div class="modal-info-label">🕐 วันที่แจ้ง</div><div class="modal-info-value" id="modal-date">—</div></div>
+          <div class="modal-info-item" id="modal-cost-row" style="display:none;"><div class="modal-info-label">💰 ค่าใช้จ่าย</div><div class="modal-info-value" id="modal-cost">—</div></div>
+          <div class="modal-info-item" id="modal-photos-row" style="display:none;"><div class="modal-info-label">📷 รูปภาพ</div><div class="modal-info-value" id="modal-photos">—</div></div>
+          <div class="modal-info-item" id="modal-sla-row"><div class="modal-info-label">⏱ SLA</div><div class="modal-info-value" id="modal-sla">—</div></div>
+          <div class="modal-info-item" id="modal-assign-row"><div class="modal-info-label">👷 มอบหมาย</div><div class="modal-info-value" id="modal-assigned">—</div></div>
+        </div>
+      </div>
+
+      <!-- Quick Update -->
+      <div class="modal-section">
+        <div class="modal-section-title">🔄 อัพเดทสถานะ</div>
+        <div class="modal-status-grid" id="modal-status-grid">
+          <div class="modal-status-btn" data-st="acknowledged" onclick="modalSelectSt(this)">✅ รับทราบแล้ว</div>
+          <div class="modal-status-btn" data-st="inprogress" onclick="modalSelectSt(this)">🔄 กำลังดำเนินการ</div>
+          <div class="modal-status-btn" data-st="waiting" onclick="modalSelectSt(this)">⏳ รออะไหล่</div>
+          <div class="modal-status-btn" data-st="roomclose" onclick="modalSelectSt(this)">🚪 ปิดห้อง</div>
+          <div class="modal-status-btn" data-st="done" onclick="modalSelectSt(this)" style="grid-column:span 2;">✔️ เสร็จแล้ว</div>
+        </div>
+      </div>
+
+      <!-- Assign -->
+      <div class="modal-section">
+        <div class="modal-section-title">👷 มอบหมายให้</div>
+        <div class="modal-assign-grid" id="modal-assign-grid">
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'SHWE DOWN GYI')">SHWE DOWN GYI</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Thiha Oo')">Thiha Oo</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Hla Moe')">Hla Moe</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Tun Myint Soe')">Tun Myint Soe</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Than Myint Aung')">Than Myint Aung</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Aung Myo Thant')">Aung Myo Thant</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Wine Chit')">Wine Chit</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'San Win')">San Win</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Min Wai Phyo')">Min Wai Phyo</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Thi Ha Zaw')">Thi Ha Zaw</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Mike')">Mike</div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="modal-section">
+        <div class="modal-section-title">📝 หมายเหตุ</div>
+        <textarea id="modal-note" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-family:'Prompt',sans-serif;font-size:13px;resize:none;min-height:60px;color:var(--text);" placeholder="เพิ่มหมายเหตุ (ถ้ามี)"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-submit" id="modal-submit-btn" onclick="submitModalUpdate()" disabled>เลือกสถานะก่อน</button>
     </div>
   </div>
 </div>
@@ -2375,7 +2525,7 @@ async function loadDashboard() {
     const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
     const rows = json.table.rows;
     dbAllData = rows.map(r => ({
-      ticketId: r.c[0]?.v||"", datetime: r.c[1]?.f||r.c[1]?.v||"",
+      ticketId: r.c[0]?.v||"", datetime: r.c[1]?.f||r.c[1]?.v||"", datetimeRaw: r.c[1]?.v||"",
       department: r.c[2]?.v||"", location: r.c[3]?.v||"",
       category: r.c[4]?.v||"", description: r.c[5]?.v||"",
       priority: r.c[6]?.v||"", reporter: r.c[7]?.v||"",
@@ -2484,6 +2634,7 @@ function dbRenderDeptFilters() {
 function dbRenderTable(filter) {
   let rows = dbAllData;
   if (filter==="urgent") rows = rows.filter(d=>parsePri(d.priority)==="urgent");
+  else if (filter==="overdue") rows = rows.filter(d=>{ const s=getSlaStatus(d); return s&&s.overdue; });
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
   if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
@@ -2493,11 +2644,188 @@ function dbRenderTable(filter) {
         const photoCell = d.photos
           ? `<a href="${d.photos.replace(/^📷 \d+ รูป: /,'')}" target="_blank" style="color:var(--accent);font-size:10px;white-space:nowrap;">📷 ดูรูป</a>`
           : `<span style="color:var(--dark-muted);font-size:10px;">—</span>`;
+        const sla = getSlaStatus(d);
+        const slaHtml = sla
+          ? (sla.overdue ? `<br><span class="sla-badge">⚠️ เกิน ${sla.elapsedStr}</span>` : `<br><span class="sla-ok-badge">⏱ ${sla.elapsedStr}</span>`)
+          : "";
         const assignCell = d.assignedTo
           ? `<span style="font-size:11px;font-weight:600;color:#0077B6;">👷 ${d.assignedTo}</span>`
           : `<span style="font-size:10px;color:var(--dark-muted);">—</span>`;
-        return `<tr><td><span class="db-ticket-id">${d.ticketId}</span></td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="white-space:nowrap">${assignCell}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
+        return `<tr class="${sla&&sla.overdue?'sla-overdue':''}" onclick="openTicketModal('${d.ticketId}')" style="cursor:pointer;"><td><span class="db-ticket-id">${d.ticketId}</span>${slaHtml}</td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="white-space:nowrap">${assignCell}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
       }).join("");
+}
+
+// ═══════════════════════════════
+//  SLA
+// ═══════════════════════════════
+const SLA_HOURS = { urgent: 1, high: 4, medium: 24, low: 72 };
+
+function parseGvizDate(v) {
+  if (!v) return null;
+  if (typeof v === 'string') {
+    const m = v.match(/Date\((\d+),(\d+),(\d+),?(\d*),?(\d*),?(\d*)\)/);
+    if (m) return new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  }
+  return null;
+}
+
+function formatElapsed(ms) {
+  const h = ms / 3600000;
+  if (h < 1) return `${Math.round(ms/60000)}น.`;
+  if (h < 24) return `${Math.floor(h)}ชม.`;
+  return `${Math.floor(h/24)}วัน ${Math.floor(h%24)}ชม.`;
+}
+
+function getSlaStatus(d) {
+  if (parseSt(d.status) === 'done') return null;
+  const created = parseGvizDate(d.datetimeRaw);
+  if (!created) return null;
+  const elapsedMs = Date.now() - created.getTime();
+  const elapsedH = elapsedMs / 3600000;
+  const pri = parsePri(d.priority);
+  const limitH = SLA_HOURS[pri];
+  if (!limitH) return null;
+  const overdue = elapsedH > limitH;
+  return { overdue, elapsedH, limitH, elapsedStr: formatElapsed(elapsedMs), remainH: Math.round(limitH - elapsedH) };
+}
+
+// ═══════════════════════════════
+//  TICKET MODAL
+// ═══════════════════════════════
+let modalTicket = null, modalSelectedSt = "", modalSelectedAssignee = "";
+
+function openTicketModal(ticketId) {
+  const d = dbAllData.find(t => t.ticketId === ticketId);
+  if (!d) return;
+  modalTicket = d;
+  modalSelectedSt = "";
+  modalSelectedAssignee = d.assignedTo || "";
+
+  // Fill info
+  document.getElementById("modal-ticket-id").textContent = d.ticketId;
+  document.getElementById("modal-status-badge").innerHTML = stBadge(d.status);
+  document.getElementById("modal-location").textContent = d.location || "—";
+  document.getElementById("modal-dept").textContent = d.department || "—";
+  document.getElementById("modal-cat").textContent = d.category || "—";
+  document.getElementById("modal-reporter").textContent = d.reporter || "—";
+  document.getElementById("modal-desc").textContent = d.description || "—";
+  document.getElementById("modal-priority").innerHTML = priBadge(d.priority);
+  document.getElementById("modal-date").textContent = d.datetime || "—";
+
+  // Cost
+  const costRow = document.getElementById("modal-cost-row");
+  costRow.style.display = d.cost ? "" : "none";
+  if (d.cost) document.getElementById("modal-cost").textContent = d.cost;
+
+  // Photos
+  const photosRow = document.getElementById("modal-photos-row");
+  photosRow.style.display = d.photos ? "" : "none";
+  if (d.photos) {
+    const url = d.photos.replace(/^📷 \d+ รูป: /,'');
+    document.getElementById("modal-photos").innerHTML = `<a href="${url}" target="_blank" style="color:var(--ocean);">📷 เปิดดู</a>`;
+  }
+
+  // SLA
+  const sla = getSlaStatus(d);
+  const slaEl = document.getElementById("modal-sla");
+  if (sla) {
+    slaEl.innerHTML = sla.overdue
+      ? `<span style="color:#dc2626;font-weight:700;">🔴 เกิน ${sla.elapsedStr}</span>`
+      : `<span style="color:#16a34a;">🟢 เหลือ ${sla.remainH}ชม.</span>`;
+  } else {
+    slaEl.textContent = parseSt(d.status) === 'done' ? '✅ เสร็จแล้ว' : '—';
+  }
+
+  // Assigned
+  document.getElementById("modal-assigned").textContent = d.assignedTo || "ยังไม่มอบหมาย";
+
+  // Pre-select current assignee chip
+  document.querySelectorAll(".modal-assign-chip").forEach(c => {
+    c.classList.toggle("selected", c.textContent === modalSelectedAssignee);
+  });
+
+  // Reset status buttons
+  document.querySelectorAll(".modal-status-btn").forEach(b => b.classList.remove("selected"));
+  document.getElementById("modal-note").value = "";
+  const submitBtn = document.getElementById("modal-submit-btn");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "เลือกสถานะก่อน";
+
+  document.getElementById("ticket-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeTicketModal(e) {
+  if (e && e.target !== document.getElementById("ticket-modal")) return;
+  document.getElementById("ticket-modal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function modalSelectSt(el) {
+  document.querySelectorAll(".modal-status-btn").forEach(b => b.classList.remove("selected"));
+  el.classList.add("selected");
+  modalSelectedSt = el.dataset.st;
+  const btn = document.getElementById("modal-submit-btn");
+  btn.disabled = false;
+  btn.textContent = "✅ ส่งการอัพเดท";
+}
+
+function modalSelectAssignee(el, name) {
+  if (modalSelectedAssignee === name) {
+    modalSelectedAssignee = "";
+    document.querySelectorAll(".modal-assign-chip").forEach(c => c.classList.remove("selected"));
+  } else {
+    modalSelectedAssignee = name;
+    document.querySelectorAll(".modal-assign-chip").forEach(c => c.classList.remove("selected"));
+    el.classList.add("selected");
+  }
+}
+
+async function submitModalUpdate() {
+  if (!modalTicket || !modalSelectedSt) return;
+  const btn = document.getElementById("modal-submit-btn");
+  btn.disabled = true; btn.textContent = "⏳ กำลังส่ง...";
+  const params = new URLSearchParams({
+    ticketId: modalTicket.ticketId,
+    status: modalSelectedSt,
+    note: document.getElementById("modal-note").value.trim(),
+    cost: "",
+    updatedBy: profile?.displayName || "Dashboard",
+    lineUserId: profile?.userId || "",
+    assignedTo: modalSelectedAssignee,
+  });
+  try {
+    fetch(CONFIG.WEBHOOK_URL + "?action=updateStatus&" + params.toString(), { method:"GET", mode:"no-cors" }).catch(()=>{});
+    await new Promise(r => setTimeout(r, 1500));
+    btn.textContent = "✅ ส่งแล้ว!";
+    setTimeout(() => {
+      closeTicketModal();
+      loadDashboard();
+    }, 800);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = "✅ ส่งการอัพเดท";
+  }
+}
+
+// ═══════════════════════════════
+//  EXPORT CSV
+// ═══════════════════════════════
+function exportCSV() {
+  if (!dbAllData.length) { alert("ไม่มีข้อมูล"); return; }
+  const headers = ["Ticket","วันที่","แผนก","สถานที่","ประเภท","อาการ","ความเร่งด่วน","ผู้แจ้ง","สถานะ","มอบหมาย","อัพเดทโดย","หมายเหตุ","ค่าใช้จ่าย","รูปภาพ"];
+  const rows = dbAllData.map(d => [
+    d.ticketId, d.datetime, d.department, d.location, d.category,
+    `"${(d.description||"").replace(/"/g,'""')}"`,
+    d.priority, d.reporter, d.status, d.assignedTo,
+    d.updatedBy, `"${(d.note||"").replace(/"/g,'""')}"`,
+    d.cost, d.photos
+  ].join(","));
+  const csv = "﻿" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `maintenance_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
 }
 
 // Auto refresh dashboard ทุก 60 วิ
