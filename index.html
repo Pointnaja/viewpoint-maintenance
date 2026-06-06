@@ -1361,6 +1361,31 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 /* EMPTY STATE */
 .db-empty { text-align:center; color:var(--muted); padding:28px; font-size:12px; }
 
+/* SEARCH BOX */
+.db-search-wrap { position:relative; margin-bottom:12px; }
+.db-search-wrap::before { content:'🔍'; position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:13px; pointer-events:none; }
+.db-search {
+  width:100%; padding:9px 12px 9px 36px;
+  border:1.5px solid var(--border); border-radius:12px;
+  font-size:13px; font-family:'Prompt',sans-serif; color:var(--text);
+  background:var(--surface); outline:none; transition:var(--transition);
+}
+.db-search:focus { border-color:var(--ocean); background:white; box-shadow:0 0 0 3px rgba(0,119,182,.1); }
+.db-search::placeholder { color:var(--muted); }
+
+/* DONE TOGGLE */
+.done-toggle {
+  display:flex; align-items:center; gap:8px;
+  padding:11px 14px; border-radius:12px;
+  background:var(--surface); border:1.5px dashed var(--border);
+  color:var(--muted); font-size:12px; cursor:pointer;
+  transition:var(--transition); margin-top:4px; user-select:none;
+}
+.done-toggle:hover { border-color:var(--ocean); color:var(--ocean); background:white; }
+.done-toggle-arrow { font-size:10px; transition:transform .2s; }
+.done-toggle-arrow.open { transform:rotate(90deg); }
+.done-section { display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+
 /* DB LOADING */
 .db-loading {
   display: flex;
@@ -1851,7 +1876,10 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         <span class="db-panel-count" id="db-table-count">0 รายการ</span>
       </div>
       <div class="db-panel-body">
-        <div style="font-size:10px;color:var(--dark-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">สถานะ</div>
+        <div class="db-search-wrap">
+          <input type="text" class="db-search" id="db-search" placeholder="ค้นหา Ticket, สถานที่, ประเภทงาน..." oninput="dbSearch(this.value)">
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">สถานะ</div>
         <div class="db-filters">
           <button class="db-filter active" onclick="dbFilter('all',this)">ทั้งหมด</button>
           <button class="db-filter" onclick="dbFilter('pending',this)">🟡 รอ</button>
@@ -1861,6 +1889,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           <button class="db-filter" onclick="dbFilter('done',this)">✅ เสร็จ</button>
           <button class="db-filter" onclick="dbFilter('urgent',this)">🔴 URGENT</button>
           <button class="db-filter" onclick="dbFilter('overdue',this)" style="border-color:#dc2626;color:#dc2626;">⚠️ เกิน SLA</button>
+          <button class="db-filter" id="db-filter-mine" onclick="dbFilter('mine',this)">👤 งานของฉัน</button>
         </div>
         <div style="font-size:10px;color:var(--dark-muted);margin-bottom:4px;margin-top:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">แผนก</div>
         <div class="db-filters" id="db-dept-filters">
@@ -2483,7 +2512,7 @@ async function uploadCompletionPhotos(ticketId) {
 // ═══════════════════════════════
 //  DASHBOARD LOGIC
 // ═══════════════════════════════
-let dbLoaded = false, dbCharts = {}, dbAllData = [], dbCurrentFilter = "all", dbDeptFilter = "all";
+let dbLoaded = false, dbCharts = {}, dbAllData = [], dbCurrentFilter = "all", dbDeptFilter = "all", dbSearchQuery = "", dbShowDone = false;
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
 function parsePri(str) {
@@ -2588,12 +2617,21 @@ function dbRenderCharts() {
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:labelColor,font:{size:10}},grid:{color:gridColor}},y:{ticks:{color:labelColor,font:{size:9},stepSize:1},grid:{color:gridColor}}} }
   });
 }
+function dbSearch(val) {
+  dbSearchQuery = val.toLowerCase().trim();
+  dbRenderCards(dbCurrentFilter);
+}
+
 function dbFilter(f, btn) {
   dbCurrentFilter = f;
-  // deactivate only status filter buttons (siblings of btn, not dept row)
   btn.closest(".db-filters").querySelectorAll(".db-filter").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   dbRenderCards(f);
+}
+
+function toggleDone() {
+  dbShowDone = !dbShowDone;
+  dbRenderCards(dbCurrentFilter);
 }
 function dbDeptFilterSet(dept, btn) {
   dbDeptFilter = dept;
@@ -2636,8 +2674,13 @@ function dbRenderCards(filter) {
   let rows = dbAllData;
   if (filter==="urgent") rows = rows.filter(d=>parsePri(d.priority)==="urgent");
   else if (filter==="overdue") rows = rows.filter(d=>{ const s=getSlaStatus(d); return s&&s.overdue; });
+  else if (filter==="mine") rows = rows.filter(d=>profile && d.assignedTo && d.assignedTo===profile.displayName);
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
   if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
+  if (dbSearchQuery) rows = rows.filter(d =>
+    [d.ticketId,d.location,d.department,d.category,d.description,d.reporter,d.assignedTo,d.note]
+    .some(v => (v||"").toLowerCase().includes(dbSearchQuery))
+  );
 
   rows = rows.slice().sort((a, b) => {
     const sa = STATUS_SORT[parseSt(a.status)] ?? 3;
@@ -2652,11 +2695,16 @@ function dbRenderCards(filter) {
   const container = document.getElementById("ticket-list");
 
   if (!rows.length) {
-    container.innerHTML = '<div class="db-empty">ไม่พบข้อมูล</div>';
+    container.innerHTML = '<div class="db-empty">ไม่พบข้อมูล 🔍</div>';
     return;
   }
 
-  container.innerHTML = rows.map(d => {
+  // แยก done กับ active
+  const activeRows = rows.filter(d => parseSt(d.status) !== "done");
+  const doneRows = rows.filter(d => parseSt(d.status) === "done");
+  const showDoneToggle = doneRows.length > 0 && filter !== "done";
+
+  const renderCard = d => {
     const sla = getSlaStatus(d);
     const pri = parsePri(d.priority);
     const isDone = parseSt(d.status) === "done";
@@ -2693,7 +2741,18 @@ function dbRenderCards(filter) {
         ${photosTag}
       </div>
     </div>`;
-  }).join("");
+  };
+
+  const activeHTML = activeRows.map(renderCard).join("");
+  const doneHTML = showDoneToggle
+    ? `<div class="done-toggle" onclick="toggleDone()">
+        <span class="done-toggle-arrow${dbShowDone?' open':''}">▶</span>
+        ✅ งานเสร็จแล้ว ${doneRows.length} รายการ — กดเพื่อ${dbShowDone?'ซ่อน':'ดู'}
+       </div>
+       ${dbShowDone ? `<div class="done-section">${doneRows.map(renderCard).join("")}</div>` : ''}`
+    : doneRows.map(renderCard).join("");
+
+  container.innerHTML = activeHTML + doneHTML;
 }
 // alias เพื่อ backward compat
 function dbRenderTable(f) { dbRenderCards(f); }
