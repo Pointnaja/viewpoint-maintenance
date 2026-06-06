@@ -1722,6 +1722,10 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           <div class="assign-chip" onclick="selectAssignee(this,'Min Wai Phyo')">Min Wai Phyo</div>
           <div class="assign-chip" onclick="selectAssignee(this,'Thi Ha Zaw')">Thi Ha Zaw</div>
           <div class="assign-chip" onclick="selectAssignee(this,'Mike')">Mike</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'La Pyae')">La Pyae</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Tin Lin Hlut')">Tin Lin Hlut</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Pyae San Maung')">Pyae San Maung</div>
+          <div class="assign-chip" onclick="selectAssignee(this,'Ko Hla')">Ko Hla</div>
         </div>
         <p style="font-size:11px;color:var(--muted);margin-top:8px;">กดเลือกช่าง/พนักงานที่รับผิดชอบ กดซ้ำเพื่อยกเลิก</p>
       </div>
@@ -1966,6 +1970,10 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
           <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Min Wai Phyo')">Min Wai Phyo</div>
           <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Thi Ha Zaw')">Thi Ha Zaw</div>
           <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Mike')">Mike</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'La Pyae')">La Pyae</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Tin Lin Hlut')">Tin Lin Hlut</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Pyae San Maung')">Pyae San Maung</div>
+          <div class="modal-assign-chip" onclick="modalSelectAssignee(this,'Ko Hla')">Ko Hla</div>
         </div>
       </div>
 
@@ -2394,7 +2402,8 @@ function closeLiff() { try { liff.closeWindow(); } catch(e) { window.close(); } 
 const TEAM_MEMBERS = [
   "SHWE DOWN GYI","Thiha Oo","Hla Moe","Tun Myint Soe",
   "Than Myint Aung","Aung Myo Thant","Wine Chit","San Win",
-  "Min Wai Phyo","Thi Ha Zaw","Mike"
+  "Min Wai Phyo","Thi Ha Zaw","Mike",
+  "La Pyae","Tin Lin Hlut","Pyae San Maung","Ko Hla"
 ];
 let selectedAssignee = "";
 
@@ -2655,12 +2664,24 @@ function dbRenderDeptFilters() {
     `<button class="db-filter${d === "all" ? " active" : ""}" data-dept="${d}" onclick="dbDeptFilterSet('${d.replace(/'/g,"\\'")}',this)">${d === "all" ? "ทั้งหมด" : d}</button>`
   ).join("");
 }
+const STATUS_SORT = { acknowledged:0, roomclose:1, pending:2, waiting:3, inprogress:4, done:5 };
+
 function dbRenderTable(filter) {
   let rows = dbAllData;
   if (filter==="urgent") rows = rows.filter(d=>parsePri(d.priority)==="urgent");
   else if (filter==="overdue") rows = rows.filter(d=>{ const s=getSlaStatus(d); return s&&s.overdue; });
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
   if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
+
+  // เรียงตามสถานะ (done อยู่ล่างสุด) แล้วเรียงตามวันที่ (เก่าสุดขึ้นก่อน)
+  rows = rows.slice().sort((a, b) => {
+    const sa = STATUS_SORT[parseSt(a.status)] ?? 3;
+    const sb = STATUS_SORT[parseSt(b.status)] ?? 3;
+    if (sa !== sb) return sa - sb;
+    const da = parseGvizDate(a.datetimeRaw), db = parseGvizDate(b.datetimeRaw);
+    if (!da || !db) return 0;
+    return da - db;
+  });
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
   document.getElementById("db-tbody").innerHTML = rows.length===0
     ? `<tr><td colspan="13" class="db-empty">ไม่พบข้อมูล</td></tr>`
