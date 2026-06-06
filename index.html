@@ -994,12 +994,12 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 .status-success.active { display: flex; }
 
 /* ══════════════════════════════════
-   SCREEN 3: DASHBOARD
+   SCREEN 3: DASHBOARD — OCEAN THEME
 ══════════════════════════════════ */
-#screen-dashboard { background: var(--dark-bg); color: var(--dark-text); }
+#screen-dashboard { background: var(--mist); color: var(--text); }
 .db-topbar {
-  background: var(--dark-surface);
-  border-bottom: 1px solid var(--dark-border);
+  background: rgba(255,255,255,0.88);
+  border-bottom: 1px solid var(--border);
   padding: 0 16px;
   height: 54px;
   display: flex;
@@ -1008,23 +1008,24 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .db-logo { display: flex; align-items: center; gap: 10px; }
 .db-logo-icon {
-  width: 28px; height: 28px;
-  background: linear-gradient(135deg, var(--accent2), var(--accent));
-  border-radius: 8px;
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  box-shadow: 0 3px 10px rgba(0,198,255,0.35);
+  font-size: 15px;
+  box-shadow: var(--shadow-ocean-sm);
 }
-.db-logo-text { font-size: 14px; font-weight: 700; }
-.db-logo-sub { font-size: 10px; color: var(--dark-muted); }
+.db-logo-text { font-size: 14px; font-weight: 700; color: var(--text); }
+.db-logo-sub { font-size: 10px; color: var(--muted); }
 .db-refresh {
-  background: var(--dark-surface2);
-  border: 1px solid var(--dark-border);
-  color: var(--dark-text);
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--text);
   padding: 6px 13px;
   border-radius: 8px;
   font-size: 11px;
@@ -1032,10 +1033,10 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   font-family: 'Prompt', sans-serif;
   transition: var(--transition);
 }
-.db-refresh:hover { border-color: var(--accent); color: var(--accent); }
+.db-refresh:hover { border-color: var(--ocean); color: var(--ocean); }
 .db-last {
   font-size: 10px;
-  color: var(--dark-muted);
+  color: var(--muted);
   font-family: 'IBM Plex Mono', monospace;
 }
 .db-main { padding: 14px 16px; max-width: 800px; margin: 0 auto; }
@@ -1050,52 +1051,40 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 @media (max-width: 500px) { .db-stats { grid-template-columns: repeat(3, 1fr); } }
 
 .db-stat {
-  background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
-  border-radius: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   padding: 14px 10px;
   position: relative;
   overflow: hidden;
   transition: var(--transition);
+  box-shadow: var(--shadow-card);
 }
-.db-stat:hover { transform: translateY(-2px); }
+.db-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-ocean); }
 .db-stat::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
+  border-radius: 14px 14px 0 0;
 }
-.db-stat.s-total::before    { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+.db-stat.s-total::before    { background: linear-gradient(90deg, var(--ocean), var(--sea)); }
 .db-stat.s-urgent::before   { background: #ef4444; }
 .db-stat.s-pending::before  { background: #eab308; }
 .db-stat.s-inprogress::before { background: #3b82f6; }
 .db-stat.s-done::before     { background: #22c55e; }
 
-/* Sparkline area (CSS only) */
-.db-stat::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 28px;
-  opacity: 0.07;
-  border-radius: 0 0 12px 12px;
-}
-.db-stat.s-total::after    { background: linear-gradient(to top, var(--accent), transparent); }
-.db-stat.s-urgent::after   { background: linear-gradient(to top, #ef4444, transparent); }
-.db-stat.s-pending::after  { background: linear-gradient(to top, #eab308, transparent); }
-.db-stat.s-inprogress::after { background: linear-gradient(to top, #3b82f6, transparent); }
-.db-stat.s-done::after     { background: linear-gradient(to top, #22c55e, transparent); }
-
 .db-stat-num {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 800;
   font-family: 'IBM Plex Mono', monospace;
   line-height: 1;
   letter-spacing: -1px;
+  color: var(--text);
 }
 .db-stat-lbl {
   font-size: 9px;
-  color: var(--dark-muted);
+  color: var(--muted);
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -1104,31 +1093,28 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   position: absolute;
   right: 8px; top: 10px;
   font-size: 16px;
-  opacity: 0.3;
+  opacity: 0.18;
 }
 
 /* DB PANELS */
 .db-panel {
-  background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
-  border-radius: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
   overflow: hidden;
   margin-bottom: 12px;
-  transition: var(--transition);
+  box-shadow: var(--shadow-card);
 }
 .db-panel-hdr {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--dark-border);
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: white;
 }
-.db-panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
-.db-panel-count {
-  font-size: 10px;
-  color: var(--dark-muted);
-  font-family: 'IBM Plex Mono', monospace;
-}
+.db-panel-title { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; color: var(--text); }
+.db-panel-count { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 .db-panel-body { padding: 14px; }
 .db-grid2 {
   display: grid;
@@ -1144,7 +1130,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   align-items: flex-start;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--dark-border);
+  border-bottom: 1px solid var(--border);
 }
 .db-urgent-item:last-child { border-bottom: none; }
 .db-urgent-dot {
@@ -1157,24 +1143,81 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   box-shadow: 0 0 6px rgba(239,68,68,0.5);
 }
 .db-urgent-dot.high { background: #f97316; box-shadow: 0 0 6px rgba(249,115,22,0.5); }
-.db-urgent-id {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--accent);
-}
-.db-urgent-loc { font-size: 12px; font-weight: 600; margin-top: 1px; }
-.db-urgent-desc {
-  font-size: 11px;
-  color: var(--dark-muted);
-  margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
+.db-urgent-id { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ocean); }
+.db-urgent-loc { font-size:12px; font-weight:600; color:var(--text); margin-top:1px; }
+.db-urgent-desc { font-size:11px; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
 
 /* CHARTS */
 .db-chart-wrap { position: relative; height: 190px; }
+
+/* BADGE COLORS — light theme */
+.db-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; white-space:nowrap; }
+.db-badge-urgent    { background:#FEE2E2; color:#DC2626; border:1px solid #FECACA; }
+.db-badge-high      { background:#FFEDD5; color:#EA580C; border:1px solid #FED7AA; }
+.db-badge-medium    { background:#DBEAFE; color:#2563EB; border:1px solid #BFDBFE; }
+.db-badge-low       { background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
+.db-badge-pending   { background:#FEF3C7; color:#D97706; border:1px solid #FDE68A; }
+.db-badge-inprogress{ background:#DBEAFE; color:#2563EB; border:1px solid #BFDBFE; }
+.db-badge-done      { background:#DCFCE7; color:#16A34A; border:1px solid #BBF7D0; }
+.db-badge-waiting   { background:#FFEDD5; color:#EA580C; border:1px solid #FED7AA; }
+.db-badge-roomclose { background:#F3E8FF; color:#9333EA; border:1px solid #E9D5FF; }
+
+/* TICKET CARDS */
+.ticket-list { display:flex; flex-direction:column; gap:10px; }
+.ticket-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 13px 14px 12px 18px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.ticket-card:hover { box-shadow: var(--shadow-ocean); border-color: var(--sea); transform: translateY(-1px); }
+.ticket-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:14px 0 0 14px;
+}
+.ticket-card.pri-urgent::before  { background:#DC2626; }
+.ticket-card.pri-high::before    { background:#EA580C; }
+.ticket-card.pri-medium::before  { background:var(--ocean); }
+.ticket-card.pri-low::before     { background:#16A34A; }
+.ticket-card.pri-unknown::before { background:var(--border); }
+.ticket-card.done-card  { opacity:0.65; }
+.ticket-card.sla-overdue-card { background:#FFFBFB; border-color:#FECACA; }
+.ticket-card-header { display:flex; align-items:center; gap:6px; margin-bottom:7px; flex-wrap:wrap; }
+.ticket-card-id { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:800; color:var(--ocean); flex:1; }
+.ticket-card-location { font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ticket-card-category { font-size:11px; color:var(--muted); margin-top:2px; }
+.ticket-card-desc { font-size:12px; color:var(--text); margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.8; }
+.ticket-card-footer { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.tc-tag { font-size:10px; background:var(--surface); border-radius:20px; padding:2px 8px; color:var(--muted); border:1px solid var(--border); white-space:nowrap; }
+.tc-tag.assigned { background:#EFF6FF; color:var(--ocean); border-color:#BFDBFE; font-weight:600; }
+
+/* WORKLOAD PANEL — ocean */
+.workload-list { display:flex; flex-direction:column; gap:8px; }
+.workload-row { display:flex; align-items:center; gap:10px; }
+.workload-name { font-size:12px; color:var(--text); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.workload-bar-wrap { flex:2; background:var(--surface); border-radius:8px; height:8px; overflow:hidden; border:1px solid var(--border); }
+.workload-bar { height:100%; background:linear-gradient(90deg,var(--ocean),var(--sea)); border-radius:8px; transition:width 0.4s ease; }
+.workload-count { font-size:11px; color:var(--muted); min-width:20px; text-align:right; }
+
+/* FILTERS — ocean */
+.db-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.db-filter {
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 5px;
+}
+.db-filter:hover { border-color: var(--ocean); color: var(--ocean); }
+.db-filter.active { background:var(--ocean); border-color:var(--ocean); color:white; box-shadow:var(--shadow-ocean-sm); }
 
 /* ASSIGN CHIPS */
 .assign-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -1312,78 +1355,11 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 .timeline-detail { font-size:11px; color:var(--muted); margin-top:3px; background:var(--surface); border-radius:6px; padding:4px 8px; }
 
 /* EXPORT BUTTON */
-.db-export { background:rgba(0,198,255,.12); border:1px solid rgba(0,198,255,.3); color:var(--accent); padding:6px 12px; border-radius:10px; font-size:11px; font-family:'Prompt',sans-serif; cursor:pointer; transition:var(--transition); }
-.db-export:hover { background:rgba(0,198,255,.2); }
+.db-export { background:var(--surface); border:1.5px solid var(--border); color:var(--ocean); padding:6px 12px; border-radius:10px; font-size:11px; font-family:'Prompt',sans-serif; cursor:pointer; transition:var(--transition); }
+.db-export:hover { background:white; border-color:var(--ocean); box-shadow:var(--shadow-ocean-sm); }
 
-/* TABLE */
-.db-table-wrap {
-  overflow-x: auto;
-  max-height: 380px;
-  overflow-y: auto;
-}
-.db-table-wrap::-webkit-scrollbar { width: 3px; height: 3px; }
-.db-table-wrap::-webkit-scrollbar-track { background: var(--dark-surface); }
-.db-table-wrap::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
-.db-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
-}
-.db-table th {
-  text-align: left;
-  padding: 8px 10px;
-  color: var(--dark-muted);
-  font-weight: 600;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--dark-border);
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  background: var(--dark-surface);
-}
-.db-table td {
-  padding: 10px 10px;
-  border-bottom: 1px solid rgba(30,45,69,0.5);
-  vertical-align: middle;
-}
-.db-table tr:last-child td { border-bottom: none; }
-.db-table tbody tr:nth-child(even) td { background: rgba(17,24,39,0.4); }
-.db-table tr:hover td {
-  background: var(--dark-surface2);
-  transition: background 0.15s;
-}
-.db-ticket-id {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--accent);
-  font-weight: 600;
-}
-.db-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.db-badge-urgent    { background: rgba(239,68,68,.15); color: #f87171; }
-.db-badge-high      { background: rgba(249,115,22,.15); color: #fb923c; }
-.db-badge-medium    { background: rgba(59,130,246,.15); color: #60a5fa; }
-.db-badge-low       { background: rgba(34,197,94,.15); color: #4ade80; }
-.db-badge-pending   { background: rgba(234,179,8,.15); color: #fbbf24; }
-.db-badge-inprogress { background: rgba(59,130,246,.15); color: #60a5fa; }
-.db-badge-done      { background: rgba(34,197,94,.15); color: #4ade80; }
-.db-badge-waiting   { background: rgba(249,115,22,.15); color: #fb923c; }
-.db-badge-roomclose { background: rgba(168,85,247,.15); color: #c084fc; }
-.db-empty {
-  text-align: center;
-  color: var(--dark-muted);
-  padding: 28px;
-  font-size: 12px;
-}
+/* EMPTY STATE */
+.db-empty { text-align:center; color:var(--muted); padding:28px; font-size:12px; }
 
 /* DB LOADING */
 .db-loading {
@@ -1890,19 +1866,8 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         <div class="db-filters" id="db-dept-filters">
           <button class="db-filter active" onclick="dbDeptFilterSet('all',this)">ทั้งหมด</button>
         </div>
-        <div class="db-table-wrap">
-          <table class="db-table">
-            <thead>
-              <tr>
-                <th>Ticket</th><th>วันที่</th><th>แผนก</th><th>สถานที่</th>
-                <th>ประเภท</th><th>อาการ</th><th>ความเร่งด่วน</th>
-                <th>ผู้แจ้ง</th><th>สถานะ</th><th>มอบหมาย</th><th>อัพเดทโดย</th><th>หมายเหตุ</th><th>รูป</th>
-              </tr>
-            </thead>
-            <tbody id="db-tbody">
-              <tr><td colspan="13" class="db-empty">กำลังโหลด...</td></tr>
-            </tbody>
-          </table>
+        <div class="ticket-list" id="ticket-list">
+          <div class="db-empty">กำลังโหลด...</div>
         </div>
       </div>
     </div>
@@ -2572,7 +2537,7 @@ async function loadDashboard() {
     document.getElementById("db-last").textContent = new Date().toLocaleTimeString("th-TH");
     dbLoaded = true;
   } catch(e) {
-    document.getElementById("db-tbody").innerHTML = `<tr><td colspan="11" class="db-empty">โหลดข้อมูลไม่ได้: ${e.message}</td></tr>`;
+    document.getElementById("ticket-list").innerHTML = `<div class="db-empty">โหลดข้อมูลไม่ได้: ${e.message}</div>`;
   }
 }
 function dbRenderStats() {
@@ -2600,26 +2565,27 @@ function dbRenderCharts() {
   const stLabels = {pending:"รอดำเนินการ",inprogress:"กำลังทำ",waiting:"รออะไหล่",roomclose:"ปิดห้อง",done:"เสร็จแล้ว",acknowledged:"รับทราบ"};
   const stColors = {pending:"#eab308",inprogress:"#3b82f6",waiting:"#f97316",roomclose:"#a855f7",done:"#22c55e",acknowledged:"#06b6d4"};
   if (dbCharts.status) dbCharts.status.destroy();
+  const gridColor = "#EEF4F8", labelColor = "#5A8A9F";
   dbCharts.status = new Chart(document.getElementById("chart-status"), {
     type:"doughnut",
-    data:{ labels:Object.keys(stCount).map(k=>stLabels[k]||k), datasets:[{data:Object.values(stCount), backgroundColor:Object.keys(stCount).map(k=>stColors[k]||"#64748b"), borderWidth:2, borderColor:"#111827"}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"right",labels:{color:"#94a3b8",font:{size:10},boxWidth:8}}} }
+    data:{ labels:Object.keys(stCount).map(k=>stLabels[k]||k), datasets:[{data:Object.values(stCount), backgroundColor:Object.keys(stCount).map(k=>stColors[k]||"#B8DDE8"), borderWidth:2, borderColor:"#FFFFFF"}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"right",labels:{color:labelColor,font:{size:10},boxWidth:8}}} }
   });
   const deptCount = {};
   dbAllData.forEach(d => { deptCount[d.department]=(deptCount[d.department]||0)+1; });
   if (dbCharts.dept) dbCharts.dept.destroy();
   dbCharts.dept = new Chart(document.getElementById("chart-dept"), {
     type:"bar",
-    data:{ labels:Object.keys(deptCount), datasets:[{data:Object.values(deptCount), backgroundColor:"rgba(0,198,255,.6)", borderColor:"#00c6ff", borderWidth:1, borderRadius:4}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:"#94a3b8",font:{size:9}},grid:{color:"#1e2d45"}},y:{ticks:{color:"#94a3b8",font:{size:9},stepSize:1},grid:{color:"#1e2d45"}}} }
+    data:{ labels:Object.keys(deptCount), datasets:[{data:Object.values(deptCount), backgroundColor:"rgba(0,119,182,.18)", borderColor:"#0077B6", borderWidth:1.5, borderRadius:6}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:labelColor,font:{size:9}},grid:{color:gridColor}},y:{ticks:{color:labelColor,font:{size:9},stepSize:1},grid:{color:gridColor}}} }
   });
   const pc = {urgent:0,high:0,medium:0,low:0};
   dbAllData.forEach(d => { const p=parsePri(d.priority); if(pc[p]!==undefined) pc[p]++; });
   if (dbCharts.priority) dbCharts.priority.destroy();
   dbCharts.priority = new Chart(document.getElementById("chart-priority"), {
     type:"bar",
-    data:{ labels:["🔴 Urgent","🟠 High","🟡 Medium","🟢 Low"], datasets:[{data:[pc.urgent,pc.high,pc.medium,pc.low], backgroundColor:["rgba(239,68,68,.6)","rgba(249,115,22,.6)","rgba(234,179,8,.6)","rgba(34,197,94,.6)"], borderColor:["#ef4444","#f97316","#eab308","#22c55e"], borderWidth:1, borderRadius:4}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:"#94a3b8",font:{size:10}},grid:{color:"#1e2d45"}},y:{ticks:{color:"#94a3b8",font:{size:9},stepSize:1},grid:{color:"#1e2d45"}}} }
+    data:{ labels:["🔴 Urgent","🟠 High","🟡 Medium","🟢 Low"], datasets:[{data:[pc.urgent,pc.high,pc.medium,pc.low], backgroundColor:["rgba(220,38,38,.15)","rgba(234,88,12,.15)","rgba(37,99,235,.15)","rgba(22,163,74,.15)"], borderColor:["#DC2626","#EA580C","#2563EB","#16A34A"], borderWidth:1.5, borderRadius:6}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:labelColor,font:{size:10}},grid:{color:gridColor}},y:{ticks:{color:labelColor,font:{size:9},stepSize:1},grid:{color:gridColor}}} }
   });
 }
 function dbFilter(f, btn) {
@@ -2627,13 +2593,13 @@ function dbFilter(f, btn) {
   // deactivate only status filter buttons (siblings of btn, not dept row)
   btn.closest(".db-filters").querySelectorAll(".db-filter").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-  dbRenderTable(f);
+  dbRenderCards(f);
 }
 function dbDeptFilterSet(dept, btn) {
   dbDeptFilter = dept;
   document.querySelectorAll("#db-dept-filters .db-filter").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-  dbRenderTable(dbCurrentFilter);
+  dbRenderCards(dbCurrentFilter);
 }
 function dbRenderWorkload() {
   const active = dbAllData.filter(d => parseSt(d.status) !== "done");
@@ -2666,39 +2632,71 @@ function dbRenderDeptFilters() {
 }
 const STATUS_SORT = { acknowledged:0, roomclose:1, pending:2, waiting:3, inprogress:4, done:5 };
 
-function dbRenderTable(filter) {
+function dbRenderCards(filter) {
   let rows = dbAllData;
   if (filter==="urgent") rows = rows.filter(d=>parsePri(d.priority)==="urgent");
   else if (filter==="overdue") rows = rows.filter(d=>{ const s=getSlaStatus(d); return s&&s.overdue; });
   else if (filter!=="all") rows = rows.filter(d=>parseSt(d.status)===filter);
   if (dbDeptFilter !== "all") rows = rows.filter(d => d.department === dbDeptFilter);
 
-  // เรียงตามสถานะ (done อยู่ล่างสุด) แล้วเรียงตามวันที่ (เก่าสุดขึ้นก่อน)
   rows = rows.slice().sort((a, b) => {
     const sa = STATUS_SORT[parseSt(a.status)] ?? 3;
     const sb = STATUS_SORT[parseSt(b.status)] ?? 3;
     if (sa !== sb) return sa - sb;
-    const da = parseGvizDate(a.datetimeRaw), db = parseGvizDate(b.datetimeRaw);
-    if (!da || !db) return 0;
-    return db - da;
+    const da = parseGvizDate(a.datetimeRaw), db2 = parseGvizDate(b.datetimeRaw);
+    if (!da || !db2) return 0;
+    return db2 - da;
   });
-  document.getElementById("db-table-count").textContent = rows.length+" รายการ";
-  document.getElementById("db-tbody").innerHTML = rows.length===0
-    ? `<tr><td colspan="13" class="db-empty">ไม่พบข้อมูล</td></tr>`
-    : rows.map(d=>{
-        const photoCell = d.photos
-          ? `<a href="${d.photos.replace(/^📷 \d+ รูป: /,'')}" target="_blank" style="color:var(--accent);font-size:10px;white-space:nowrap;">📷 ดูรูป</a>`
-          : `<span style="color:var(--dark-muted);font-size:10px;">—</span>`;
-        const sla = getSlaStatus(d);
-        const slaHtml = sla
-          ? (sla.overdue ? `<br><span class="sla-badge">⚠️ เกิน ${sla.elapsedStr}</span>` : `<br><span class="sla-ok-badge">⏱ ${sla.elapsedStr}</span>`)
-          : "";
-        const assignCell = d.assignedTo
-          ? `<span style="font-size:11px;font-weight:600;color:#0077B6;">👷 ${d.assignedTo}</span>`
-          : `<span style="font-size:10px;color:var(--dark-muted);">—</span>`;
-        return `<tr class="${sla&&sla.overdue?'sla-overdue':''}" onclick="openTicketModal('${d.ticketId}')" style="cursor:pointer;"><td><span class="db-ticket-id">${d.ticketId}</span>${slaHtml}</td><td style="font-size:10px;color:var(--dark-muted);white-space:nowrap">${d.datetime}</td><td>${d.department}</td><td>${d.location}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.category}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.description}">${d.description}</td><td>${priBadge(d.priority)}</td><td>${d.reporter}</td><td>${stBadge(d.status)}</td><td style="white-space:nowrap">${assignCell}</td><td style="font-size:10px;color:var(--dark-muted)">${d.updatedBy||'—'}</td><td style="font-size:10px;color:var(--dark-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.note}">${d.note||'—'}</td><td>${photoCell}</td></tr>`;
-      }).join("");
+
+  document.getElementById("db-table-count").textContent = rows.length + " รายการ";
+  const container = document.getElementById("ticket-list");
+
+  if (!rows.length) {
+    container.innerHTML = '<div class="db-empty">ไม่พบข้อมูล</div>';
+    return;
+  }
+
+  container.innerHTML = rows.map(d => {
+    const sla = getSlaStatus(d);
+    const pri = parsePri(d.priority);
+    const isDone = parseSt(d.status) === "done";
+    const slaTag = sla
+      ? (sla.overdue
+          ? `<span class="sla-badge">⚠️ เกิน ${sla.elapsedStr}</span>`
+          : `<span class="sla-ok-badge">⏱ ${sla.elapsedStr}</span>`)
+      : "";
+    const assignTag = d.assignedTo
+      ? `<span class="tc-tag assigned">👷 ${d.assignedTo}</span>`
+      : "";
+    const photosTag = d.photos
+      ? `<a href="${d.photos.replace(/^📷 \d+ รูป: /,'')}" target="_blank" class="tc-tag" onclick="event.stopPropagation()" style="color:var(--ocean);">📷 ดูรูป</a>`
+      : "";
+    const noteTag = d.note ? `<span class="tc-tag" title="${d.note}">📝 ${d.note.length > 20 ? d.note.slice(0,20)+'…' : d.note}</span>` : "";
+
+    return `<div class="ticket-card pri-${pri}${isDone?' done-card':''}${sla&&sla.overdue?' sla-overdue-card':''}" onclick="openTicketModal('${d.ticketId}')">
+      <div class="ticket-card-header">
+        <span class="ticket-card-id">${d.ticketId}</span>
+        ${priBadge(d.priority)}
+        ${stBadge(d.status)}
+      </div>
+      <div class="ticket-card-body">
+        <div class="ticket-card-location">📍 ${d.location}${d.department ? ' · ' + d.department : ''}</div>
+        <div class="ticket-card-category">🔩 ${d.category}</div>
+        <div class="ticket-card-desc">📝 ${d.description}</div>
+      </div>
+      <div class="ticket-card-footer">
+        <span class="tc-tag">👤 ${d.reporter}</span>
+        ${assignTag}
+        <span class="tc-tag">📅 ${d.datetime}</span>
+        ${slaTag}
+        ${noteTag}
+        ${photosTag}
+      </div>
+    </div>`;
+  }).join("");
 }
+// alias เพื่อ backward compat
+function dbRenderTable(f) { dbRenderCards(f); }
 
 // ═══════════════════════════════
 //  SLA
