@@ -2680,7 +2680,7 @@ function dbRenderTable(filter) {
     if (sa !== sb) return sa - sb;
     const da = parseGvizDate(a.datetimeRaw), db = parseGvizDate(b.datetimeRaw);
     if (!da || !db) return 0;
-    return da - db;
+    return db - da;
   });
   document.getElementById("db-table-count").textContent = rows.length+" รายการ";
   document.getElementById("db-tbody").innerHTML = rows.length===0
