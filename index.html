@@ -1373,6 +1373,12 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 .db-search:focus { border-color:var(--ocean); background:white; box-shadow:0 0 0 3px rgba(0,119,182,.1); }
 .db-search::placeholder { color:var(--muted); }
 
+/* MY TICKETS SCREEN */
+.my-section { }
+.my-section-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.my-section-title { font-size:13px; font-weight:700; color:var(--text); }
+.my-section-count { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:2px 8px; }
+
 /* DONE TOGGLE */
 .done-toggle {
   display:flex; align-items:center; gap:8px;
@@ -1649,125 +1655,50 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
 <!-- ══════════════════════════════════════
      SCREEN 2: STATUS UPDATE
      ══════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 2: งานของฉัน
+     ══════════════════════════════════════ -->
 <div class="screen" id="screen-status">
-  <div class="wave-bg" style="height:200px">
+  <div class="wave-bg" style="height:180px">
     <svg class="wave-svg" viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
       <path d="M0,30 C480,65 960,5 1440,35 L1440,60 L0,60 Z" fill="#CAF0F8"/>
     </svg>
   </div>
   <div style="position:relative;z-index:1;">
     <div class="status-header">
-      <h1>📋 อัพเดทสถานะงาน</h1>
-      <p>Viewpoint Resort · เกาะเต่า</p>
-    </div>
-    <div class="status-body">
-      <!-- User Card -->
-      <div class="status-user-card">
-        <div class="status-avatar" id="st-avatar">?</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="status-avatar" id="my-avatar">?</div>
         <div>
-          <div style="font-size:14px;font-weight:700;" id="st-username">กำลังโหลด...</div>
-          <div class="status-ticket-info">ทีม Maintenance</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ocean);line-height:1.2;" id="my-name">กำลังโหลด...</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Viewpoint Resort · Maintenance</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 16px 100px;">
+
+      <!-- งานที่รับผิดชอบ -->
+      <div class="my-section">
+        <div class="my-section-hdr">
+          <span class="my-section-title">🔧 งานที่รับผิดชอบ</span>
+          <span class="my-section-count" id="my-work-count">—</span>
+        </div>
+        <div class="ticket-list" id="my-work-list">
+          <div class="db-empty">⏳ กำลังโหลด...</div>
         </div>
       </div>
 
-      <!-- Ticket ID input -->
-      <div class="card" style="margin:0 0 14px;">
-        <div class="section-title">🎫 Ticket ID</div>
-        <input type="text" id="st-ticket-input" placeholder="เช่น MT-84536" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:2px;font-size:16px;">
-        <p style="font-size:11px;color:var(--muted);margin-top:6px;">กรอก Ticket ID จาก LINE Group หรือ Dashboard</p>
-      </div>
-
-      <!-- Status Buttons -->
-      <div class="card" style="margin:0 0 14px;">
-        <div class="section-title">สถานะงาน</div>
-        <div class="status-grid">
-          <div class="status-btn" data-st="acknowledged" onclick="selectSt(this)">
-            <span class="s-emoji">✅</span>
-            <span>รับทราบงานแล้ว</span>
-            <span class="s-desc">Acknowledged</span>
-          </div>
-          <div class="status-btn" data-st="inprogress" onclick="selectSt(this)">
-            <span class="s-emoji">🔄</span>
-            <span>กำลังดำเนินการ</span>
-            <span class="s-desc">In Progress</span>
-          </div>
-          <div class="status-btn" data-st="waiting" onclick="selectSt(this)">
-            <span class="s-emoji">⏳</span>
-            <span>รออะไหล่</span>
-            <span class="s-desc">Waiting for parts</span>
-          </div>
-          <div class="status-btn" data-st="roomclose" onclick="selectSt(this)">
-            <span class="s-emoji">🚪</span>
-            <span>ต้องปิดห้อง</span>
-            <span class="s-desc">Room closure needed</span>
-          </div>
-          <div class="status-btn" data-st="done" onclick="selectSt(this)">
-            <span class="s-emoji">✔️</span>
-            <span>เสร็จแล้ว — งานเสร็จสมบูรณ์</span>
-          </div>
+      <!-- งานที่ฉันแจ้ง -->
+      <div class="my-section" style="margin-top:20px;">
+        <div class="my-section-hdr">
+          <span class="my-section-title">📤 งานที่ฉันแจ้ง</span>
+          <span class="my-section-count" id="my-reports-count">—</span>
+        </div>
+        <div class="ticket-list" id="my-reports-list">
+          <div class="db-empty">⏳ กำลังโหลด...</div>
         </div>
       </div>
 
-      <!-- Assign To -->
-      <div class="card" style="margin:0 0 14px;">
-        <div class="section-title">👷 มอบหมายให้ <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
-        <div class="assign-grid" id="assign-grid">
-          <div class="assign-chip" onclick="selectAssignee(this,'SHWE DOWN GYI')">SHWE DOWN GYI</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Thiha Oo')">Thiha Oo</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Hla Moe')">Hla Moe</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Tun Myint Soe')">Tun Myint Soe</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Than Myint Aung')">Than Myint Aung</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Aung Myo Thant')">Aung Myo Thant</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Wine Chit')">Wine Chit</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'San Win')">San Win</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Min Wai Phyo')">Min Wai Phyo</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Thi Ha Zaw')">Thi Ha Zaw</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Mike')">Mike</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'La Pyae')">La Pyae</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Tin Lin Hlut')">Tin Lin Hlut</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Pyae San Maung')">Pyae San Maung</div>
-          <div class="assign-chip" onclick="selectAssignee(this,'Ko Hla')">Ko Hla</div>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:8px;">กดเลือกช่าง/พนักงานที่รับผิดชอบ กดซ้ำเพื่อยกเลิก</p>
-      </div>
-
-      <!-- Cost Estimate -->
-      <div class="card" style="margin:0 0 14px;">
-        <div class="section-title">💰 ประเมินค่าใช้จ่าย <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
-        <div style="position:relative;">
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--muted);pointer-events:none;">฿</span>
-          <input type="text" id="st-cost" placeholder="เช่น 500, 1,200-1,500, ฟรี" style="padding-left:34px;">
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:6px;">ระบุค่าแรง/ค่าอะไหล่โดยประมาณ หรือว่างไว้ได้</p>
-      </div>
-
-      <!-- Note -->
-      <div class="card" style="margin:0 0 14px;">
-        <div class="section-title">📝 หมายเหตุ (ถ้ามี)</div>
-        <textarea class="status-note" id="st-note" placeholder="เช่น รอสั่งอะไหล่ 2-3 วัน, ปิดห้องถึง 15:00 น." maxlength="200" oninput="updateNoteCounter(this)"></textarea>
-        <div class="note-counter" id="note-counter">0 / 200</div>
-      </div>
-
-      <!-- Completion Photos — shown only when status = done -->
-      <div class="card" id="completion-photo-card" style="margin:0 0 14px;display:none;">
-        <div class="section-title">📷 รูปงานเสร็จ <span style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
-        <div class="photo-zone">
-          <input type="file" accept="image/*" multiple id="completion-photo-input" onchange="handleCompletionPhoto(this)">
-          <div class="photo-icon-big">🏁</div>
-          <p><strong>แนบรูปผลงานที่เสร็จแล้ว</strong></p>
-        </div>
-        <div class="photo-thumbs" id="completion-photo-thumbs"></div>
-      </div>
-
-      <button class="btn-status-submit" id="btn-st-submit" onclick="submitStatus()" disabled>เลือกสถานะก่อนส่ง</button>
-
-      <!-- Status Success -->
-      <div class="status-success" id="st-success">
-        <div class="success-wave">✓</div>
-        <h2 style="font-size:22px;font-weight:800;color:var(--ocean);margin-top:16px">อัพเดทสำเร็จ!</h2>
-        <p style="color:var(--muted);font-size:14px;margin-top:8px;line-height:1.6">ระบบแจ้งทีมและผู้แจ้งซ่อมแล้ว</p>
-        <button class="btn-close" style="margin-top:24px" onclick="resetStatus()">อัพเดทงานอื่น</button>
-      </div>
+      <button onclick="loadMyTickets()" style="width:100%;margin-top:20px;padding:11px;background:white;border:1.5px solid var(--border);border-radius:12px;font-family:'Prompt',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;">⟳ รีเฟรช</button>
     </div>
   </div>
 </div>
@@ -1971,10 +1902,30 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
         </div>
       </div>
 
+      <!-- Cost -->
+      <div class="modal-section">
+        <div class="modal-section-title">💰 ประเมินค่าใช้จ่าย <span style="font-size:9px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
+        <div style="position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted);pointer-events:none;">฿</span>
+          <input type="text" id="modal-cost" placeholder="เช่น 500, 1,200-1,500, ฟรี" style="width:100%;padding:9px 12px 9px 28px;border:1.5px solid var(--border);border-radius:10px;font-family:'Prompt',sans-serif;font-size:13px;color:var(--text);">
+        </div>
+      </div>
+
       <!-- Note -->
       <div class="modal-section">
-        <div class="modal-section-title">📝 หมายเหตุ</div>
+        <div class="modal-section-title">📝 หมายเหตุ <span style="font-size:9px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
         <textarea id="modal-note" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-family:'Prompt',sans-serif;font-size:13px;resize:none;min-height:60px;color:var(--text);" placeholder="เพิ่มหมายเหตุ (ถ้ามี)"></textarea>
+      </div>
+
+      <!-- Completion Photo — shown only when done selected -->
+      <div class="modal-section" id="modal-completion-card" style="display:none;">
+        <div class="modal-section-title">📷 รูปงานเสร็จ <span style="font-size:9px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">(Optional)</span></div>
+        <div class="photo-zone" style="margin-top:4px;">
+          <input type="file" accept="image/*" multiple id="modal-completion-input" onchange="handleModalCompletionPhoto(this)">
+          <div class="photo-icon-big">🏁</div>
+          <p><strong>แนบรูปผลงานที่เสร็จแล้ว</strong></p>
+        </div>
+        <div class="photo-thumbs" id="modal-completion-thumbs"></div>
       </div>
 
       <!-- History Timeline -->
@@ -2006,7 +1957,7 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
   <button class="nav-item" id="nav-status" onclick="switchScreen('status')">
     <div class="nav-pill"></div>
     <span class="nav-icon">📋</span>
-    <span class="nav-label">สถานะ</span>
+    <span class="nav-label">งานของฉัน</span>
     <div class="nav-indicator"></div>
   </button>
   <button class="nav-item" id="nav-dashboard" onclick="switchScreen('dashboard')">
@@ -2039,6 +1990,7 @@ function switchScreen(name) {
   document.getElementById("nav-" + name).classList.add("active");
   currentScreen = name;
   if (name === "dashboard" && !dbLoaded) loadDashboard();
+  if (name === "status") loadMyTickets();
   window.scrollTo(0, 0);
 }
 
@@ -2060,17 +2012,16 @@ async function initLiff() {
     document.getElementById("st-avatar").textContent = profile.displayName.charAt(0).toUpperCase();
   } catch(e) { console.log("dev mode:", e.message); }
 
-  // อ่าน URL params: ?ticketId=MT-xxxxx&status=acknowledged
+  // อ่าน URL params: ?ticketId=MT-xxxxx
   const urlParams = new URLSearchParams(location.search);
   const ticketParam = urlParams.get("ticketId");
-  const statusParam = urlParams.get("status");
   if (ticketParam) {
-    document.getElementById("st-ticket-input").value = ticketParam.toUpperCase();
     switchScreen("status");
-    if (statusParam) {
-      const btn = document.querySelector(`.status-btn[data-st="${statusParam}"]`);
-      if (btn) selectSt(btn);
-    }
+    const tryOpen = async () => {
+      if (!dbLoaded) await loadDashboard();
+      openTicketModal(ticketParam.toUpperCase());
+    };
+    tryOpen();
   }
 }
 initLiff();
@@ -2496,10 +2447,66 @@ function handleCompletionPhoto(input) {
   });
 }
 
-async function uploadCompletionPhotos(ticketId) {
-  if (!pendingCompletionPhotos.length) return;
+// ═══════════════════════════════
+//  งานของฉัน
+// ═══════════════════════════════
+async function loadMyTickets() {
+  if (profile) {
+    document.getElementById("my-avatar").textContent = profile.displayName.charAt(0).toUpperCase();
+    document.getElementById("my-name").textContent = profile.displayName;
+  }
+  document.getElementById("my-work-list").innerHTML = '<div class="db-empty">⏳ กำลังโหลด...</div>';
+  document.getElementById("my-reports-list").innerHTML = '<div class="db-empty">⏳ กำลังโหลด...</div>';
+  if (!dbLoaded) await loadDashboard();
+  renderMyTickets();
+}
+
+function renderMyTickets() {
+  if (!profile) return;
+  const myWork = dbAllData.filter(d =>
+    d.assignedTo && d.assignedTo === profile.displayName && parseSt(d.status) !== "done"
+  );
+  const myReports = dbAllData
+    .filter(d => d.reporterLineId && d.reporterLineId === profile.userId)
+    .slice(0, 15);
+
+  document.getElementById("my-work-count").textContent = myWork.length + " รายการ";
+  document.getElementById("my-reports-count").textContent = myReports.length + " รายการ";
+
+  const renderMiniCard = d => {
+    const sla = getSlaStatus(d);
+    const pri = parsePri(d.priority);
+    const isDone = parseSt(d.status) === "done";
+    return `<div class="ticket-card pri-${pri}${isDone?' done-card':''}${sla&&sla.overdue?' sla-overdue-card':''}" onclick="openTicketModal('${d.ticketId}')">
+      <div class="ticket-card-header">
+        <span class="ticket-card-id">${d.ticketId}</span>
+        ${priBadge(d.priority)} ${stBadge(d.status)}
+      </div>
+      <div class="ticket-card-body">
+        <div class="ticket-card-location">📍 ${d.location}${d.department?' · '+d.department:''}</div>
+        <div class="ticket-card-desc">📝 ${d.description}</div>
+      </div>
+      <div class="ticket-card-footer">
+        <span class="tc-tag">📅 ${d.datetime}</span>
+        ${d.assignedTo?`<span class="tc-tag assigned">👷 ${d.assignedTo}</span>`:''}
+        ${sla&&sla.overdue?`<span class="sla-badge">⚠️ เกิน ${sla.elapsedStr}</span>`:''}
+      </div>
+    </div>`;
+  };
+
+  document.getElementById("my-work-list").innerHTML = myWork.length
+    ? myWork.map(renderMiniCard).join("")
+    : '<div class="db-empty">🎉 ไม่มีงานค้าง</div>';
+  document.getElementById("my-reports-list").innerHTML = myReports.length
+    ? myReports.map(renderMiniCard).join("")
+    : '<div class="db-empty">ยังไม่มีการแจ้งซ่อม</div>';
+}
+
+async function uploadCompletionPhotos(ticketId, photos) {
+  const arr = photos || pendingCompletionPhotos;
+  if (!arr.length) return;
   try {
-    const images = await Promise.all(pendingCompletionPhotos.map(compressImage));
+    const images = await Promise.all(arr.map(compressImage));
     fetch(CONFIG.WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
@@ -2559,7 +2566,7 @@ async function loadDashboard() {
       status: r.c[11]?.v||"🟡 Pending",
       updatedBy: r.c[12]?.v||"", note: r.c[13]?.v||"",
       photos: r.c[14]?.v||"", cost: r.c[15]?.v||"",
-      assignedTo: r.c[16]?.v||"",
+      assignedTo: r.c[16]?.v||"", reporterLineId: r.c[10]?.v||"",
     })).filter(d => d.ticketId && d.ticketId.startsWith("MT-"));
     dbDeptFilter = "all";
     dbRenderStats(); dbRenderUrgent(); dbRenderCharts(); dbRenderDeptFilters(); dbRenderWorkload(); dbRenderTable("all");
@@ -2849,6 +2856,11 @@ function openTicketModal(ticketId) {
   // Reset status buttons
   document.querySelectorAll(".modal-status-btn").forEach(b => b.classList.remove("selected"));
   document.getElementById("modal-note").value = "";
+  document.getElementById("modal-cost").value = "";
+  document.getElementById("modal-completion-card").style.display = "none";
+  document.getElementById("modal-completion-thumbs").innerHTML = "";
+  document.getElementById("modal-completion-input").value = "";
+  pendingModalCompletionPhotos = [];
   const submitBtn = document.getElementById("modal-submit-btn");
   submitBtn.disabled = true;
   submitBtn.textContent = "เลือกสถานะก่อน";
@@ -2910,6 +2922,20 @@ function modalSelectSt(el) {
   const btn = document.getElementById("modal-submit-btn");
   btn.disabled = false;
   btn.textContent = "✅ ส่งการอัพเดท";
+  document.getElementById("modal-completion-card").style.display = modalSelectedSt === "done" ? "" : "none";
+}
+
+let pendingModalCompletionPhotos = [];
+function handleModalCompletionPhoto(input) {
+  const wrap = document.getElementById("modal-completion-thumbs");
+  wrap.innerHTML = "";
+  pendingModalCompletionPhotos = Array.from(input.files).slice(0, 6);
+  pendingModalCompletionPhotos.forEach(f => {
+    const img = document.createElement("img");
+    img.className = "photo-thumb";
+    img.src = URL.createObjectURL(f);
+    wrap.appendChild(img);
+  });
 }
 
 function modalSelectAssignee(el, name) {
@@ -2931,18 +2957,22 @@ async function submitModalUpdate() {
     ticketId: modalTicket.ticketId,
     status: modalSelectedSt,
     note: document.getElementById("modal-note").value.trim(),
-    cost: "",
+    cost: document.getElementById("modal-cost").value.trim(),
     updatedBy: profile?.displayName || "Dashboard",
     lineUserId: profile?.userId || "",
     assignedTo: modalSelectedAssignee,
   });
   try {
     fetch(CONFIG.WEBHOOK_URL + "?action=updateStatus&" + params.toString(), { method:"GET", mode:"no-cors" }).catch(()=>{});
+    if (modalSelectedSt === "done" && pendingModalCompletionPhotos.length)
+      uploadCompletionPhotos(modalTicket.ticketId, pendingModalCompletionPhotos);
     await new Promise(r => setTimeout(r, 1500));
     btn.textContent = "✅ ส่งแล้ว!";
+    pendingModalCompletionPhotos = [];
     setTimeout(() => {
       closeTicketModal();
       loadDashboard();
+      if (currentScreen === "status") renderMyTickets();
     }, 800);
   } catch(e) {
     btn.disabled = false; btn.textContent = "✅ ส่งการอัพเดท";
