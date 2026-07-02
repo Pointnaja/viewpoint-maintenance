@@ -2554,7 +2554,7 @@ function stBadge(str) {
 
 async function loadDashboard() {
   try {
-    const res = await fetch(SHEET_URL);
+    const res = await fetch(SHEET_URL + "&_t=" + Date.now(), { cache: "no-store" });
     const text = await res.text();
     const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
     const rows = json.table.rows;
@@ -2982,8 +2982,8 @@ async function submitModalUpdate() {
       closeTicketModal();
       dbRenderStats(); dbRenderUrgent(); dbRenderCards(dbCurrentFilter); dbRenderWorkload();
       if (currentScreen === "status") renderMyTickets();
-      // Background sync with real sheet data (sheet may lag 5-10s)
-      setTimeout(() => loadDashboard(), 8000);
+      // Background sync after 30s — gviz cache usually expires by then
+      setTimeout(() => loadDashboard(), 30000);
     }, 800);
   } catch(e) {
     btn.disabled = false; btn.textContent = "✅ ส่งการอัพเดท";
