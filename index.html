@@ -2969,10 +2969,21 @@ async function submitModalUpdate() {
     await new Promise(r => setTimeout(r, 1500));
     btn.textContent = "✅ ส่งแล้ว!";
     pendingModalCompletionPhotos = [];
+    // Optimistic update — reflect change immediately in dbAllData before sheet syncs
+    const idx = dbAllData.findIndex(d => d.ticketId === modalTicket.ticketId);
+    if (idx !== -1) {
+      dbAllData[idx].status = modalSelectedSt;
+      dbAllData[idx].assignedTo = modalSelectedAssignee || dbAllData[idx].assignedTo;
+      dbAllData[idx].note = document.getElementById("modal-note").value.trim() || dbAllData[idx].note;
+      dbAllData[idx].cost = document.getElementById("modal-cost").value.trim() || dbAllData[idx].cost;
+      dbAllData[idx].updatedBy = profile?.displayName || "Dashboard";
+    }
     setTimeout(() => {
       closeTicketModal();
-      loadDashboard();
+      dbRenderStats(); dbRenderUrgent(); dbRenderCards(dbCurrentFilter); dbRenderWorkload();
       if (currentScreen === "status") renderMyTickets();
+      // Background sync with real sheet data (sheet may lag 5-10s)
+      setTimeout(() => loadDashboard(), 8000);
     }, 800);
   } catch(e) {
     btn.disabled = false; btn.textContent = "✅ ส่งการอัพเดท";
