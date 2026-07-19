@@ -2485,12 +2485,14 @@ function renderMyTickets() {
   const myWork = dbAllData.filter(d =>
     d.assignedTo && d.assignedTo === profile.displayName && parseSt(d.status) !== "done"
   );
-  const myReports = dbAllData
+  const myReportsAll = dbAllData
     .filter(d => d.reporterLineId && d.reporterLineId === profile.userId)
     .slice(0, 15);
+  const myReports = myReportsAll.filter(d => parseSt(d.status) !== "done");
+  const myReportsDone = myReportsAll.filter(d => parseSt(d.status) === "done");
 
   document.getElementById("my-work-count").textContent = myWork.length + " รายการ";
-  document.getElementById("my-reports-count").textContent = myReports.length + " รายการ";
+  document.getElementById("my-reports-count").textContent = myReportsAll.length + " รายการ";
 
   const renderMiniCard = d => {
     const sla = getSlaStatus(d);
@@ -2516,10 +2518,20 @@ function renderMyTickets() {
   document.getElementById("my-work-list").innerHTML = myWork.length
     ? myWork.map(renderMiniCard).join("")
     : '<div class="db-empty">🎉 ไม่มีงานค้าง</div>';
-  document.getElementById("my-reports-list").innerHTML = myReports.length
+  let reportsHtml = myReports.length
     ? myReports.map(renderMiniCard).join("")
-    : '<div class="db-empty">ยังไม่มีการแจ้งซ่อม</div>';
+    : (myReportsDone.length ? "" : '<div class="db-empty">ยังไม่มีการแจ้งซ่อม</div>');
+  if (myReportsDone.length) {
+    reportsHtml += `<div class="done-toggle" onclick="toggleMyDone()">
+      <span class="done-toggle-arrow${myShowDone?' open':''}">▶</span>
+      ✅ งานเสร็จแล้ว ${myReportsDone.length} รายการ — กดเพื่อ${myShowDone?'ซ่อน':'ดู'}
+    </div>`;
+    if (myShowDone) reportsHtml += myReportsDone.map(renderMiniCard).join("");
+  }
+  document.getElementById("my-reports-list").innerHTML = reportsHtml;
 }
+let myShowDone = false;
+function toggleMyDone() { myShowDone = !myShowDone; renderMyTickets(); }
 
 async function uploadCompletionPhotos(ticketId, photos) {
   const arr = photos || pendingCompletionPhotos;
