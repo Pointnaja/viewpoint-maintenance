@@ -1707,6 +1707,11 @@ input::placeholder, textarea::placeholder { color: #b0cdd8; }
      SCREEN 3: DASHBOARD
      ══════════════════════════════════════ -->
 <div class="screen" id="screen-dashboard">
+  <div id="db-locked" style="display:none;padding:80px 30px;text-align:center;">
+    <div style="font-size:56px;margin-bottom:16px;">🔒</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">เฉพาะผู้ดูแลระบบ</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;">Dashboard เปิดให้เฉพาะ Admin เท่านั้น<br>หากต้องการสิทธิ์เข้าถึง กรุณาติดต่อผู้จัดการ</div>
+  </div>
   <div class="db-topbar">
     <div class="db-logo">
       <div class="db-logo-icon">🔧</div>
@@ -1977,7 +1982,14 @@ const CONFIG = {
   WEBHOOK_URL:    "https://script.google.com/macros/s/AKfycbzxwN3qaXYGZa5FtF0KXLrzHVZkj9kkFMgWStgMwvQeMLvJWOM1r7zdaDT38w2wt6HoWQ/exec",
   SHEET_ID:       "1K6iHGWDzYeiFqfaNuuIQh1NMgLJCQZmU1kVpYLL3C_4",
   SHEET_NAME:     "Maintenance Tickets",
+  // Admin LINE userIds — เข้า Dashboard ได้เฉพาะรายชื่อนี้
+  ADMIN_USER_IDS: [
+    "U6685bef909a262c3c9d0e8bebd1e7a8b", // Mike
+    "U0344d79657dbc4a928b236d268687f20", // POINT
+    "Uc7a2124e0652648deb953decfee4ec0f", // view
+  ],
 };
+let isAdmin = false;
 
 // ═══════════════════════════════
 //  SCREEN SWITCH
@@ -1989,7 +2001,13 @@ function switchScreen(name) {
   document.getElementById("screen-" + name).classList.add("active");
   document.getElementById("nav-" + name).classList.add("active");
   currentScreen = name;
-  if (name === "dashboard" && !dbLoaded) loadDashboard();
+  if (name === "dashboard") {
+    const locked = !isAdmin;
+    document.getElementById("db-locked").style.display = locked ? "" : "none";
+    document.querySelector("#screen-dashboard .db-topbar").style.display = locked ? "none" : "";
+    document.querySelector("#screen-dashboard .db-main").style.display = locked ? "none" : "";
+    if (!locked && !dbLoaded) loadDashboard();
+  }
   if (name === "status") loadMyTickets();
   window.scrollTo(0, 0);
 }
@@ -2003,6 +2021,7 @@ async function initLiff() {
     await liff.init({ liffId: CONFIG.LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
     profile = await liff.getProfile();
+    isAdmin = CONFIG.ADMIN_USER_IDS.includes(profile.userId);
     // Form
     document.getElementById("user-name").textContent = profile.displayName.split(" ")[0];
     document.getElementById("avatar-init").textContent = profile.displayName.charAt(0).toUpperCase();
