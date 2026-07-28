@@ -2046,6 +2046,33 @@ async function initLiff() {
 initLiff();
 
 // ═══════════════════════════════
+//  ID TOKEN — ใช้ยืนยันตัวตนกับ backend
+// ═══════════════════════════════
+// backend จะเอา token นี้ไปให้ LINE ยืนยันว่าเป็นใครจริง จึงปลอม userId ไม่ได้
+function getIdToken() {
+  try {
+    const t = liff.getIDToken();
+    if (!t) return null;
+    // ถอด payload ของ JWT ดูวันหมดอายุ (เหลือไม่ถึง 1 นาที = ถือว่าหมดแล้ว)
+    const b64 = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(Array.prototype.map.call(atob(b64),
+      c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+    const payload = JSON.parse(json);
+    if (payload.exp && payload.exp * 1000 < Date.now() + 60000) return null;
+    return t;
+  } catch(e) { return null; }
+}
+
+// เรียกก่อนส่งข้อมูลทุกครั้ง — ถ้าหมดอายุจะพาไป login ใหม่
+function requireIdToken() {
+  const t = getIdToken();
+  if (t) return t;
+  alert("เซสชันหมดอายุ กรุณาเปิดแอปใหม่อีกครั้ง");
+  try { liff.login({ redirectUri: location.href }); } catch(e) {}
+  return null;
+}
+
+// ═══════════════════════════════
 //  i18n
 // ═══════════════════════════════
 const T = {
@@ -2285,12 +2312,14 @@ function compressImage(file) {
 
 async function uploadPhotos(ticketId) {
   if (!pendingPhotos.length) return;
+  const idToken = getIdToken();
+  if (!idToken) { console.log("ไม่มี idToken — ข้ามการอัพโหลดรูป"); return; }
   try {
     const images = await Promise.all(pendingPhotos.map(compressImage));
     fetch(CONFIG.WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "uploadPhotos", ticketId, images }),
+      body: JSON.stringify({ action: "uploadPhotos", ticketId, images, idToken }),
       mode: "no-cors",
     }).catch(() => {});
   } catch(e) { console.log("Photo upload error:", e); }
@@ -2344,6 +2373,9 @@ async function submitForm() {
     try {
       await liff.sendMessages([{ type:"text", text:"MT_DATA:"+params.toString() }]);
     } catch(e) {
+      const idToken = requireIdToken();
+      if (!idToken) { document.getElementById("loading").classList.remove("active"); return; }
+      params.set("idToken", idToken);
       fetch(CONFIG.WEBHOOK_URL+"?"+params.toString(), {method:"GET",mode:"no-cors"}).catch(()=>{});
       await new Promise(r => setTimeout(r, 2000));
     }
@@ -2405,35 +2437,6 @@ function updateNoteCounter(el) {
   document.getElementById("note-counter").textContent = el.value.length + " / 200";
 }
 
-async function submitStatus() {
-  const ticketId = document.getElementById("st-ticket-input").value.trim().toUpperCase();
-  if (!ticketId) { alert("กรุณากรอก Ticket ID"); return; }
-  if (!selectedSt) return;
-  const btn = document.getElementById("btn-st-submit");
-  btn.disabled = true; btn.textContent = "⏳ กำลังส่ง...";
-  const params = new URLSearchParams({
-    ticketId, status: selectedSt,
-    note: document.getElementById("st-note").value.trim(),
-    cost: document.getElementById("st-cost").value.trim(),
-    updatedBy: profile?.displayName || "",
-    lineUserId: profile?.userId || "",
-    assignedTo: selectedAssignee,
-  });
-  try {
-    try {
-      await liff.sendMessages([{ type:"text", text:"MT_STATUS:"+params.toString() }]);
-    } catch(e) {
-      fetch(CONFIG.WEBHOOK_URL+"?action=updateStatus&"+params.toString(), {method:"GET",mode:"no-cors"}).catch(()=>{});
-      await new Promise(r => setTimeout(r, 1500));
-    }
-    if (selectedSt === "done") uploadCompletionPhotos(ticketId);
-    document.getElementById("status-body") && (document.querySelector(".status-body").style.display="none");
-    document.getElementById("st-success").classList.add("active");
-  } catch(err) {
-    btn.disabled = false; btn.textContent = "✅ ส่งการอัพเดท";
-    alert("เกิดข้อผิดพลาด: " + err.message);
-  }
-}
 function resetStatus() {
   selectedSt = "";
   document.getElementById("st-ticket-input").value = "";
@@ -2536,12 +2539,14 @@ function toggleMyDone() { myShowDone = !myShowDone; renderMyTickets(); }
 async function uploadCompletionPhotos(ticketId, photos) {
   const arr = photos || pendingCompletionPhotos;
   if (!arr.length) return;
+  const idToken = getIdToken();
+  if (!idToken) { console.log("ไม่มี idToken — ข้ามการอัพโหลดรูป"); return; }
   try {
     const images = await Promise.all(arr.map(compressImage));
     fetch(CONFIG.WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "uploadCompletionPhotos", ticketId, images }),
+      body: JSON.stringify({ action: "uploadCompletionPhotos", ticketId, images, idToken }),
       mode: "no-cors",
     }).catch(() => {});
   } catch(e) { console.log("Completion photo upload error:", e); }
@@ -2983,18 +2988,24 @@ function modalSelectAssignee(el, name) {
 async function submitModalUpdate() {
   if (!modalTicket || !modalSelectedSt) return;
   const btn = document.getElementById("modal-submit-btn");
+  const idToken = requireIdToken();
+  if (!idToken) return;
   btn.disabled = true; btn.textContent = "⏳ กำลังส่ง...";
-  const params = new URLSearchParams({
-    ticketId: modalTicket.ticketId,
-    status: modalSelectedSt,
-    note: document.getElementById("modal-note").value.trim(),
-    cost: document.getElementById("modal-cost").value.trim(),
-    updatedBy: profile?.displayName || "Dashboard",
-    lineUserId: profile?.userId || "",
-    assignedTo: modalSelectedAssignee,
-  });
   try {
-    fetch(CONFIG.WEBHOOK_URL + "?action=updateStatus&" + params.toString(), { method:"GET", mode:"no-cors" }).catch(()=>{});
+    fetch(CONFIG.WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      mode: "no-cors",
+      body: JSON.stringify({
+        action: "updateStatus",
+        idToken,
+        ticketId: modalTicket.ticketId,
+        status: modalSelectedSt,
+        note: document.getElementById("modal-note").value.trim(),
+        cost: document.getElementById("modal-cost").value.trim(),
+        assignedTo: modalSelectedAssignee,
+      }),
+    }).catch(()=>{});
     if (modalSelectedSt === "done" && pendingModalCompletionPhotos.length)
       uploadCompletionPhotos(modalTicket.ticketId, pendingModalCompletionPhotos);
     await new Promise(r => setTimeout(r, 1500));
